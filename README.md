@@ -6,10 +6,18 @@
 
 | 檔案 | 用途 |
 |---|---|
-| `index.html` | 整個網站（單一檔案） |
+| `index.html` | 網站頁面與互動邏輯 |
+| `styles.css` | 網站排版、手機版與介面樣式 |
+| `assets/reading-garden.svg` | 首頁共讀插畫（本地檔案，不依賴外部圖床） |
 | `config.js` | 資料庫連線設定（Project URL 與 Publishable key，可公開） |
-| `db/schema.sql` | 資料庫結構與權限規則，先執行 |
-| `db/patch1.sql` | 補丁，在 schema.sql 之後執行 |
+| `schema.sql` | 資料庫結構與權限規則，新資料庫先執行 |
+| `patch1.sql` | 補丁，在 schema.sql 之後執行 |
+
+## 本機預覽
+
+在專案資料夾執行 `python -m http.server 8000`，開啟 `http://localhost:8000`。不需要安裝前端套件或編譯。資料讀取使用 `config.js` 指定的 Supabase；本機測試登入前，需在 Supabase 設定允許的重新導向網址。
+
+部署至 GitHub Pages 時，請保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置。既有資料庫不需為這次介面改版重跑 SQL。
 
 ## 安全提醒
 
