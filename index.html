@@ -4,181 +4,144 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>繪本小聚場</title>
-<style>
-:root{--bg:#f6f3ed;--card:#fffdf9;--ink:#25221f;--mute:#7a7369;--line:#e4ded3;--acc:#2f5d50;--acc2:#e8eeea;--on:#fff;--warn:#f4eadf;--red:#b0413e;
---sh:0 1px 2px rgba(40,30,20,.05),0 10px 26px -14px rgba(40,30,20,.22);--ser:"Noto Serif TC","Songti TC","Source Han Serif TC",Georgia,serif;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171918;--card:#202322;--ink:#ece8e1;--mute:#9a958c;--line:#33373a;--acc:#8fbfae;--acc2:#26312e;--on:#10201b;--warn:#2d2822;--red:#e38b87;--sh:0 1px 2px rgba(0,0,0,.3),0 10px 26px -14px rgba(0,0,0,.6)}}
-:root[data-theme="dark"]{--bg:#171918;--card:#202322;--ink:#ece8e1;--mute:#9a958c;--line:#33373a;--acc:#8fbfae;--acc2:#26312e;--on:#10201b;--warn:#2d2822;--red:#e38b87;--sh:0 1px 2px rgba(0,0,0,.3),0 10px 26px -14px rgba(0,0,0,.6)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:28px 20px 72px}
-.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:20px}
-h1{font:600 30px/1.2 var(--ser);letter-spacing:.04em;margin:0 0 4px}
-.sub{color:var(--mute);margin:0}
-.box{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh)}
-.btn,.chip,.tab{font:inherit;font-weight:500;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 15px;cursor:pointer;background:var(--card);transition:border-color .18s,background .18s,color .18s}
-.btn:hover,.chip:hover,.tab:hover{border-color:var(--acc);color:var(--acc)}
-.btn.y{background:var(--acc);border-color:var(--acc);color:var(--on)}.btn.y:hover{opacity:.9;color:var(--on)}
-.chip.on{background:var(--acc);border-color:var(--acc);color:var(--on)}
-.tab{border-radius:8px;border-color:transparent;background:transparent;color:var(--mute)}
-.tab.on{background:var(--acc2);color:var(--acc);border-color:transparent}
-.scen{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 14px;margin:0 -2px}
-.scen .btn{white-space:nowrap;font-size:13px}
-.filters{padding:18px 20px;margin-bottom:22px;display:grid;gap:12px}
-.fr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.lab{font-size:13px;color:var(--mute);min-width:44px;letter-spacing:.06em}
-input[type=text],input[type=number],input[type=date],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 12px;max-width:100%}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--acc2);border-color:var(--acc)}
-input[type=range]{accent-color:var(--acc);width:180px}
-textarea{width:100%;min-height:96px;resize:vertical}
-.bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:4px 0 16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:22px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;animation:fade .4s both;transition:transform .22s,box-shadow .22s}
-.card:hover{transform:translateY(-4px);box-shadow:0 2px 4px rgba(40,30,20,.06),0 18px 34px -16px rgba(40,30,20,.3)}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.cv{height:150px;display:flex;align-items:center;justify-content:center;font:500 76px/1 var(--ser);color:rgba(255,255,255,.92);position:relative}
-.cv::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.2),rgba(0,0,0,.14));pointer-events:none}
-.cv>*{z-index:1}
-.heart{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#25221f;font-size:18px;cursor:pointer;line-height:1;padding:0;transition:transform .15s}
-.heart:hover{transform:scale(1.1)}
-.heart.on{color:var(--red);animation:bump .3s}
-@keyframes bump{50%{transform:scale(1.3)}}
-.age{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.92);color:#25221f;border-radius:999px;font-family:inherit;font-size:12px;font-weight:500;line-height:1.7;padding:0 10px}
-.cb{padding:14px 16px 16px;display:grid;gap:8px}
-.cb h3{margin:0;font:600 17px/1.35 var(--ser)}
-.mt{font-size:13px;color:var(--mute)}
-.tg span{display:inline-block;border:1px solid var(--line);color:var(--mute);border-radius:6px;font-size:12px;padding:0 8px;margin:0 5px 5px 0}
-.tg span.s{color:var(--acc);background:var(--acc2);border-color:transparent}
-.warnb{background:var(--warn);border-radius:8px;padding:6px 12px;font-size:13px}
-.empty{grid-column:1/-1;text-align:center;padding:48px;color:var(--mute);font:16px var(--ser)}
-.ov{position:fixed;inset:0;background:rgba(20,18,16,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
-.ov.show{display:flex}
-.md{max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:0;animation:fade .25s both}
-.md .cv{height:170px}
-.mb{padding:22px;display:grid;gap:14px}
-.mb h2{font:600 22px/1.3 var(--ser)}
-.x{position:absolute;top:10px;right:10px;z-index:3;padding:3px 11px}
-.say{background:var(--acc2);border-left:3px solid var(--acc);border-radius:4px 10px 10px 4px;padding:10px 14px}
-.row2{display:flex;gap:8px;flex-wrap:wrap}
-.row2 a{text-decoration:none;display:inline-block}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,120px);background:var(--ink);color:var(--bg);padding:9px 20px;border-radius:10px;font-size:14px;font-weight:500;transition:transform .3s;z-index:30}
-.toast.show{transform:translate(-50%,0)}
-.note{font-size:12px;color:var(--mute)}
-.rt{padding:4px 16px}
-#lvls{display:flex;gap:8px}
-.stamp{background:var(--acc2);color:var(--acc);border-radius:6px;padding:1px 9px;font-size:12px;font-weight:500}
-.tg span.g{background:var(--acc);color:var(--on);border-color:transparent}
-.vb{display:grid;grid-template-columns:78px 1fr 26px;align-items:center;gap:8px;font-size:13px;margin:3px 0}
-.vb i{display:block;height:8px;border-radius:4px;background:var(--acc);opacity:.75}
-.vb b{font-weight:500;color:var(--mute);text-align:right}
-.sec{margin:0 0 8px;font:600 15px/1.4 var(--ser)}
-.vf{background:var(--acc2);border-radius:10px;padding:14px;display:grid;gap:10px}
-.vf .btn.y{justify-self:start}
-.cm{border-top:1px solid var(--line);padding:10px 0}
-.more summary{cursor:pointer}
-.lnk{background:none;border:0;color:var(--mute);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
-.ftog{display:none}
-.fbody{display:grid;gap:12px}
-.nt{padding:14px 16px;display:grid;gap:8px;grid-column:1/-1}
-.gb{background:var(--acc2);border-radius:10px;padding:14px;display:grid;gap:8px}
-.gbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-.gbar i{display:block;height:100%;background:var(--acc)}
-.chip.mo{border-style:dashed;color:var(--mute)}
-@media (max-width:640px){
-.wrap{padding:20px 14px 60px}
-h1{font-size:26px}
-.ftog{display:inline-block}
-.fbody{display:none}
-.fbody.open{display:grid}
-.filters{padding:14px}
-.fr .chip{padding:4px 11px;font-size:13px}
-.mb{padding:18px}
-}
-.sm{min-height:60px}
-.th{display:grid;gap:2px;justify-items:start}
-.th img{width:72px;height:72px;object-fit:cover;border-radius:8px;display:block}
-.gal{display:flex;gap:8px;overflow-x:auto}
-.gal img{height:120px;border-radius:8px;cursor:zoom-in;flex:none}
-.gd{display:grid;gap:10px;border-left:3px solid var(--acc);padding-left:14px}
-.gd b{font-weight:600;color:var(--acc)}
-.adr{border-top:1px solid var(--line);padding:12px 0;display:grid;gap:8px}
-input[type=password]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
-</style>
+<meta name="description" content="家長親自讀過的繪本推薦。依年齡與生活情境找書，看看孩子的真實反應，收藏下一本想一起讀的故事。">
+<meta name="theme-color" content="#faf8f1">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap">
-<div class="top">
-  <div><h1>繪本小聚場</h1><p class="sub">家長親自讀過才推薦，適合的年齡與階段由家長投票決定。</p></div>
-  <div class="fr"><button class="btn" id="acct">登入／註冊</button><button class="btn" id="rand">隨機挑一本</button><button class="btn y" id="addb">分享一本繪本</button></div>
-</div>
-<div class="scen" id="scen"></div>
-
-<div class="box filters">
-  <div class="fr"><input type="text" id="q" placeholder="搜尋書名、作者、心得" style="flex:1;min-width:160px">
-  <select id="sort"><option value="">排序：預設</option><option value="vote">最多家長投票</option><option value="like">最多家長覺得有幫助</option><option value="age">年齡由小到大</option></select><button class="btn ftog" id="ftog">篩選條件</button></div>
-  <div class="fbody" id="fbody">
-  <div class="fr"><span class="lab">語言</span><span id="langs" class="fr"></span><button type="button" class="chip" id="twb">台灣作家</button></div>
-  <div class="fr"><span class="lab">孩子</span><input type="range" id="age" min="-1" max="12" value="-1"><b id="agev">不限年齡</b></div>
-  <div class="fr"><span class="lab">階段</span><span id="stages" class="fr" style="flex:1"></span></div>
-  <div class="fr"><span class="lab">主題</span><span id="themes" class="fr" style="flex:1"></span></div>
-  <div class="fr"><span class="lab">風格</span><span id="styles" class="fr" style="flex:1"></span></div>
-  <div class="fr"><label><input type="checkbox" id="nowarn"> 只看沒有沉重或嚇人內容的書</label><label><input type="checkbox" id="onlygb"> 只看開放集氣的書</label><button class="btn" id="reset" style="margin-left:auto">清除條件</button></div>
+<a class="skip" href="#main">跳到主要內容</a>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Zm0 0v14"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5c-3-3-7-1-8 1-1-2-5-4-8-1-4 4 0 9 8 15 8-6 12-11 8-15Z"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M19 14A8 8 0 0 1 10 4a8 8 0 1 0 9 10Z"/><path d="m18 3 1 2 2 1-2 1-1 2-1-2-2-1 2-1Z"/></symbol><symbol id="i-school" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3Zm7 10v-6h4v6M7 10h1m8 0h1M12 3v-2"/></symbol><symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-9C5 12 3 8 3 4c6 0 9 3 9 8Zm0 4c0-8 3-11 9-11 0 6-3 10-9 11Z"/></symbol><symbol id="i-abc" viewBox="0 0 24 24"><path d="m3 17 4-11 4 11M4.5 13h5M15 7h3a3 3 0 0 1 0 6h-3m0-6v11h3a3 3 0 0 0 0-6"/></symbol><symbol id="i-numbers" viewBox="0 0 24 24"><path d="m4 8 3-2v12m-3 0h6m4-10c3-4 9 0 5 4l-5 6h7"/></symbol><symbol id="i-friends" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol><symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 6h18M3 18h18M3 12h18"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="2" fill="currentColor" stroke="none"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol><symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3 5h3c4 0 7 14 11 14h4m-4-4 4 4-4 3M3 19h3c2 0 3-3 5-6m3-5c1-2 2-3 3-3h4m-4-3 4 3-4 4"/></symbol><symbol id="i-shelf" viewBox="0 0 24 24"><path d="M3 21h18M4 5h4v13H4Zm7-2h4v15h-4Zm7 3 3-1 3 12-3 1Z"/></symbol><symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 20C2 7 8 2 21 3c0 13-5 18-16 17Zm0 0L16 9"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol></defs></svg>
+<header class="site-header" data-page>
+  <div class="wrap header-inner">
+    <a class="brand" href="./" aria-label="繪本小聚場首頁">
+      <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="15" fill="#e9eedf"/><path d="M24 23c-5-4-10-4-15-2v17c5-2 10-2 15 2 5-4 10-4 15-2V21c-5-2-10-2-15 2Zm0 0v17" stroke="#456547" stroke-width="1.8" stroke-linejoin="round"/><path d="M24 21v-8m0 5c-7 0-9-4-9-7 6-1 9 2 9 7Zm0-4c0-5 3-8 8-8 0 5-3 8-8 8Z" fill="#b88152"/></svg>
+      <span><span class="brand-name">繪本小聚場</span><span class="brand-caption">一起讀，一起慢慢長大</span></span>
+    </a>
+    <nav class="header-nav" aria-label="主要導覽">
+      <a class="nav-link" href="#discover" data-explore>探索繪本</a>
+      <button class="nav-link" id="my-shelf"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-shelf"></use></svg>我的書架</button>
+      <button class="btn soft" id="acct">登入／註冊</button>
+    </nav>
   </div>
-</div>
-
-<div class="bar"><div class="fr"><button class="tab on" data-t="all">全部</button><button class="tab" data-t="fav">收藏清單 <b id="fc">0</b></button><button class="tab" data-t="log">閱讀紀錄</button><button class="tab" data-t="note">通知 <b id="nc">0</b></button></div>
-<div class="fr"><span id="count" class="mt"></span><button class="btn" id="share">分享書單／紀錄</button></div></div>
-<div id="stats"></div>
-<div id="list" class="grid"></div>
-<p class="note" style="margin-top:28px">購買連結為站內搜尋；日後若改用聯盟連結，會在此標示。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p>
-</div>
+</header>
+<main class="wrap" id="main" tabindex="-1" data-page>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">來自家長，讀過才有的真心推薦</p>
+      <h1 id="hero-title">每個成長時刻，<br>都有一本<span class="accent">剛剛好的繪本。</span></h1>
+      <p class="hero-description">從睡前的一個擁抱，到第一次勇敢上學。<br>讓其他家庭的共讀經驗，陪你找到下一個好故事。</p>
+      <div class="hero-actions">
+        <a class="btn y large" href="#discover" data-explore><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg>找一本好書 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-arrow"></use></svg></a>
+        <button class="btn soft large" id="addb">分享我的推薦</button>
+      </div>
+      <p class="hero-note"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>自由瀏覽，不需登入。喜歡了，再放進你的書架。</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <img src="assets/reading-garden.svg" alt="" width="600" height="460" fetchpriority="high">
+      <p class="art-caption">今天，也一起讀一本吧。</p>
+    </div>
+  </section>
+  <div class="promises" aria-label="網站特色">
+    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-heart"></use></svg>家長真實共讀心得</span>
+    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-sprout"></use></svg>依年齡與情境找書</span>
+    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg>收藏下次想讀的故事</span>
+  </div>
+  <section aria-labelledby="scenario-title">
+    <div class="section-heading">
+      <div><h2 id="scenario-title">今天，想陪孩子聊什麼？</h2><p class="section-description">從生活裡的小時刻，找到故事的入口。</p></div>
+      <span class="small-label">選一個情境開始 ↓</span>
+    </div>
+    <div class="scen" id="scen" role="group" aria-label="依生活情境找書"></div>
+  </section>
+  <section class="browse" id="discover" aria-labelledby="browse-title">
+    <div class="section-heading">
+      <div><h2 class="browse-title" id="browse-title">下一本喜歡的書，在這裡。</h2><p class="section-description" id="browse-description">一則真心分享，讓選書多一點方向。</p></div>
+    </div>
+    <nav class="shelf-tabs" aria-label="切換書單">
+      <button class="tab on" data-t="all" aria-pressed="true">探索繪本</button>
+      <button class="tab" data-t="fav" aria-pressed="false">收藏清單 <b id="fc">0</b></button>
+      <button class="tab" data-t="log" aria-pressed="false">閱讀紀錄</button>
+      <button class="tab" data-t="note" id="note-tab" aria-pressed="false" hidden>通知 <b id="nc">0</b></button>
+    </nav>
+    <div class="filters" role="search" aria-label="搜尋及篩選繪本">
+      <div class="search-row">
+        <div class="search-field"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+          <label class="sr-only" for="q">搜尋書名、作者或心得</label>
+          <input type="text" id="q" placeholder="搜尋書名、作者或心得…" autocomplete="off" enterkeyhint="search">
+          <button class="search-clear" id="clear-search" aria-label="清除搜尋文字" hidden>×</button>
+        </div>
+        <button class="btn ftog" id="ftog" aria-expanded="false" aria-controls="fbody"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-filter"></use></svg><span id="filter-label">篩選</span></button>
+        <label class="sr-only" for="sort">書單排序</label>
+        <select id="sort"><option value="">最新分享</option><option value="vote">最多家長投票</option><option value="like">最多家長覺得有幫助</option><option value="age">建議年齡由小到大</option></select>
+      </div>
+      <div class="quick-filters"><span class="lab" id="language-label">語言</span><div id="langs" class="fr" role="group" aria-labelledby="language-label"></div><button type="button" class="chip" id="twb" aria-pressed="false">台灣作家</button></div>
+      <div class="fbody" id="fbody">
+        <div class="fr filter-row"><label class="lab" for="age">年齡</label><div class="filter-options"><div class="range-row"><input type="range" id="age" min="-1" max="12" value="-1" aria-describedby="age-help"><b id="agev">不限年齡</b></div><p class="note" id="age-help">依家長投票篩選；尚未有年齡建議的書不會出現在指定年齡中。</p></div></div>
+        <div class="fr filter-row"><span class="lab" id="stage-label">階段</span><div id="stages" class="fr filter-options" role="group" aria-labelledby="stage-label"></div></div>
+        <div class="fr filter-row" id="theme-row"><span class="lab" id="theme-label">主題</span><div id="themes" class="fr filter-options" role="group" aria-labelledby="theme-label"></div></div>
+        <div class="fr filter-row" id="style-row"><span class="lab" id="style-label">風格</span><div id="styles" class="fr filter-options" role="group" aria-labelledby="style-label"></div></div>
+        <div class="fr filter-end"><div><label class="check"><input type="checkbox" id="nowarn">只看未標註注意事項的書</label><label class="check" id="group-filter" hidden><input type="checkbox" id="onlygb">只看開放集氣的書</label></div><button class="text-btn" id="reset">清除所有條件</button></div>
+      </div>
+      <div class="active-filters" id="active-filters" aria-label="已套用的條件"></div>
+    </div>
+    <div class="bar"><span class="result-info" id="count" role="status" aria-live="polite" aria-atomic="true">正在整理書架…</span><div class="fr"><button class="text-btn" id="share" hidden>分享這份書單 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-arrow"></use></svg></button><button class="text-btn" id="rand"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-shuffle"></use></svg>隨機遇見一本</button></div></div>
+    <div id="stats"></div>
+    <div id="list" class="grid" aria-busy="true"></div>
+  </section>
+  <section class="share-invite" aria-labelledby="invite-title">
+    <div class="invite-copy"><svg class="invite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg><div><h2 id="invite-title">你家反覆讀的那本，<br>可能正是另一個家庭需要的故事。</h2><p>不用寫得完美，分享孩子最真實的反應就很好。</p></div></div>
+    <button class="btn" data-action="share-book">分享一本繪本 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg></button>
+  </section>
+</main>
+<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。</p><p class="footer-note">購書連結為書店搜尋；若使用聯盟連結，會另外標示。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
 
 <div class="ov" id="ov"><div class="box md" id="md" style="position:relative"></div></div>
 
-<div class="ov" id="ovf"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()">✕</button><div class="mb">
-  <h2 style="margin:0">分享一本你讀過的繪本</h2>
-  <div class="fr"><input type="text" id="f_t" placeholder="書名"><input type="text" id="f_a" placeholder="作者"></div>
-  <label class="mt"><input type="checkbox" id="f_tw"> 這是台灣作家（作者或繪者）的作品</label>
-  <div class="fr"><select id="f_lang"><option>中文</option><option>英文</option></select></div>
-  <div class="mt">你覺得適合幾歲？（可複選）</div><div class="fr" id="fa"></div>
-  <div class="mt">適合哪個階段或學習目標？（可複選）</div><div class="fr" id="fs"></div>
-  <input type="text" id="f_th" placeholder="主題，用逗號分隔（例：友誼, 情緒）">
-  <input type="text" id="f_st" placeholder="風格，用逗號分隔（例：水彩, 溫柔）">
-  <textarea id="f_r" placeholder="你的閱讀心得"></textarea>
-  <div class="mt">上傳照片（封面或幾頁內頁，最多 4 張，第一張會當作書卡封面）</div>
-  <div class="fr"><label class="btn" for="f_ph">選擇或拍攝照片</label><input type="file" id="f_ph" accept="image/*" multiple style="display:none"></div><div class="fr" id="f_pv"></div>
-  <div class="warnb"><b>請勿上傳孩子的照片</b>（包含臉部、制服、校名等可辨識資訊），避免安全疑慮。只放書的封面或幾頁代表內頁，也請不要整本拍攝。</div><label class="mt"><input type="checkbox" id="f_ck"> 我確認照片中沒有孩子</label>
-  <input type="text" id="f_k" placeholder="孩子的反應（選填）">
-  <div class="mt">陪讀建議（選填）：幫助其他家長知道怎麼和孩子一起讀、怎麼讓孩子理解</div>
-  <textarea class="sm" id="g_b" placeholder="讀之前：可以先和孩子聊什麼？（例如看封面猜故事）"></textarea>
-  <textarea class="sm" id="g_m" placeholder="讀的時候：可以問孩子什麼問題？哪裡適合停下來互動？"></textarea>
-  <textarea class="sm" id="g_a" placeholder="讀完之後：可以延伸什麼對話或活動？"></textarea>
-  <input type="text" id="f_w" placeholder="注意事項（沒有可留空）">
-  <button class="btn y" id="f_ok" style="justify-self:start">送出</button>
-  <p class="note">送出後會先由管理者審核，通過後才會公開。</p></div></div></div>
+<div class="ov" id="ovf"><div class="box md"><button class="btn x" onclick="closeAll()" aria-label="關閉分享視窗">✕</button><div class="mb">
+  <h2 style="margin:0" id="submit-title" tabindex="-1">分享一本你讀過的繪本</h2>
+  <p class="form-intro">說說你們一起讀的經驗，給下一位家長一點靈感。</p>
+  <div class="field-grid"><label class="field" for="f_t">書名 <span class="sr-only">必填</span><input type="text" id="f_t" placeholder="這本好故事叫什麼名字？" required maxlength="200"></label><label class="field" for="f_a">作者／繪者（選填）<input type="text" id="f_a" placeholder="依手上的版本填寫"></label></div>
+  <label class="field" for="f_lang">你讀的版本<select id="f_lang"><option>中文</option><option>英文</option></select></label>
+  <label class="field" for="f_r">為什麼想推薦？（選填）<textarea id="f_r" placeholder="例如：故事很貼近剛上學的心情，我們讀完聊了好久。"></textarea></label>
+  <label class="field" for="f_k">孩子的反應（選填）<input type="text" id="f_k" placeholder="例如：3 歲半，每晚都指定讀，還會幫主角說話。"></label>
+  <fieldset><legend>你覺得適合幾歲？（選填，可複選）</legend><div class="fr" id="fa"></div></fieldset>
+  <fieldset><legend>適合哪個階段或情境？（選填，可複選）</legend><div class="fr" id="fs"></div></fieldset>
+  <details class="optional-fields"><summary>補充照片、主題與陪讀建議（選填）</summary><div class="optional-body">
+    <label class="check"><input type="checkbox" id="f_tw">這是台灣作者或繪者的作品</label>
+    <label class="field" for="f_th">主題<input type="text" id="f_th" placeholder="例如：友誼、情緒（用逗號或頓號分隔）"></label>
+    <label class="field" for="f_st">畫風或特色<input type="text" id="f_st" placeholder="例如：水彩、溫柔（用逗號或頓號分隔）"></label>
+    <div class="field"><span>繪本照片</span><small>最多 4 張，第一張作為書封；只上傳封面或少量代表內頁。</small><input type="file" id="f_ph" aria-label="上傳繪本照片，最多四張" accept="image/*" multiple><div class="fr" id="f_pv"></div></div>
+    <div class="warnb">請勿上傳孩子、制服或校名等可辨識資訊，也請不要拍攝整本書。</div>
+    <label class="check"><input type="checkbox" id="f_ck">我確認照片中沒有孩子或可辨識資訊</label>
+    <label class="field" for="g_b">讀之前，怎麼開始聊？<textarea class="sm" id="g_b" placeholder="例如：看封面，猜猜主角今天的心情。"></textarea></label>
+    <label class="field" for="g_m">讀的時候，怎麼互動？<textarea class="sm" id="g_m" placeholder="例如：讓孩子幫角色配音。"></textarea></label>
+    <label class="field" for="g_a">讀完之後，可以做什麼？<textarea class="sm" id="g_a" placeholder="例如：畫一畫自己的心情。"></textarea></label>
+    <label class="field" for="f_w">需要留意的內容<input type="text" id="f_w" placeholder="例如：有分離或大聲吼叫的畫面；沒有可留空。"></label>
+  </div></details>
+  <button class="btn y" id="f_ok">送出我的推薦</button>
+  <p class="note">投稿會先由管理者審核，通過後公開。管理者投稿會直接公開。</p>
+</div></div></div>
 
-<div class="ov" id="ovl"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()">✕</button><div class="mb"><h2 id="lg_t" style="margin:0"></h2>
-  <div class="fr">讀完日期 <input type="date" id="lg_d"></div>
+<div class="ov" id="ovl"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 id="lg_t" style="margin:0"></h2>
+  <label class="field" for="lg_d">讀完日期<input type="date" id="lg_d"></label>
   <div class="fr">孩子的喜歡程度 <button class="chip rt" onclick="rt=this.textContent;rateUI()">很愛</button><button class="chip rt" onclick="rt=this.textContent;rateUI()">喜歡</button><button class="chip rt" onclick="rt=this.textContent;rateUI()">普通</button></div>
-  <input type="text" id="lg_n" maxlength="80" placeholder="小小紀錄（選填，例如孩子最愛哪一頁）">
+  <label class="field" for="lg_n">小小紀錄（選填）<input type="text" id="lg_n" maxlength="80" placeholder="例如：孩子最愛哪一頁？"></label>
   <div class="row2"><button class="btn y" id="lg_ok">儲存紀錄</button><button class="btn" id="lg_del">移除紀錄</button></div>
-  <p class="note">紀錄只存在這台裝置的瀏覽器裡。</p></div></div></div>
+  <p class="note">閱讀紀錄儲存在你的帳號，只有你自己能查看。</p></div></div></div>
 
-<div class="ov" id="ovs"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()">✕</button><div class="mb"><h2 style="margin:0">分享</h2><textarea id="sh_t"></textarea>
+<div class="ov" id="ovs"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">分享好故事</h2><label class="field" for="sh_t">想分享的文字<textarea id="sh_t"></textarea></label>
   <div class="row2"><a class="btn" id="sh_l" target="_blank" rel="noopener">LINE</a><a class="btn" id="sh_f" target="_blank" rel="noopener">Facebook</a><a class="btn" id="sh_x" target="_blank" rel="noopener">X</a><a class="btn" id="sh_th" target="_blank" rel="noopener">Threads</a><button class="btn y" id="sh_c">複製文字</button><button class="btn" id="sh_n">系統分享</button></div>
   <p class="note">可以先修改上面的文字。Instagram、小紅書、Dcard 沒有網頁分享連結，請先複製文字再貼上。</p></div></div></div>
-<div class="ov" id="ova"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()">✕</button><div class="mb"><h2 style="margin:0">登入／註冊</h2>
+<div class="ov" id="ova"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">登入／註冊</h2>
   <div id="ac_out" style="display:grid;gap:12px"><p class="mt" style="margin:0">輸入 Email，我們會寄一封登入連結給你，不需要密碼；第一次使用會自動建立帳號。瀏覽與篩選不需要登入，投稿、投票、留言、收藏與集氣需要登入。</p>
-  <div class="fr"><input type="text" id="ac_n" placeholder="暱稱（第一次使用時設定）" style="width:190px"><input type="text" id="ac_e" placeholder="Email" style="flex:1;min-width:170px"></div>
-  <button class="btn y" id="ac_ok" style="justify-self:start">寄送登入連結</button><div class="mt" id="ac_sent"></div></div>
-  <div id="ac_in" style="display:none;gap:12px"><div class="mt" id="ac_me"></div><div class="fr"><input type="text" id="ac_nn" placeholder="暱稱" style="width:190px"><button class="btn" id="ac_sv">更新暱稱</button></div><button class="btn" id="ac_off" style="justify-self:start">登出</button></div>
+  <label class="field" for="ac_e">Email<input type="email" id="ac_e" placeholder="you@example.com" autocomplete="email" inputmode="email" required></label><label class="field" for="ac_n">暱稱（第一次使用時設定）<input type="text" id="ac_n" maxlength="12" placeholder="其他家長會看到的名字" autocomplete="nickname"></label>
+  <button class="btn y" id="ac_ok" style="justify-self:start">寄送登入連結</button><div class="mt" id="ac_sent" role="status" aria-live="polite"></div></div>
+  <div id="ac_in" style="display:none;gap:12px"><div class="mt" id="ac_me"></div><label class="field" for="ac_nn">暱稱<input type="text" id="ac_nn" maxlength="12" autocomplete="nickname"></label><button class="btn" id="ac_sv">更新暱稱</button><button class="btn" id="ac_off" style="justify-self:start">登出</button></div>
   <p class="note" style="margin:0">我們只會用你的 Email 寄登入連結，以及你同意的通知。</p></div></div></div>
-<div class="ov" id="ovm"><div class="box md" style="position:relative;max-width:640px"><button class="btn x" onclick="closeAll()">✕</button><div class="mb"><h2 style="margin:0">管理後台</h2>
+<div class="ov" id="ovm"><div class="box md" style="position:relative;max-width:640px"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">管理後台</h2>
   <div id="am_body"><div class="fr" style="margin-bottom:8px"><button class="btn y" data-a="pend">待審核投稿</button><button class="btn" data-a="gb">集氣管理</button><button class="btn" data-a="cm">留言檢舉</button></div><div id="am_c"></div></div></div></div></div>
-<div class="ov" id="ovz"><img id="zi" alt="" style="max-width:96%;max-height:90vh;border-radius:10px"></div>
-<div class="toast" id="toast"></div>
+<div class="ov" id="ovz"><div class="zoom-panel"><button class="btn x" onclick="closeTopDialog()" aria-label="關閉放大照片">✕</button><img id="zi" alt="繪本照片放大檢視"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="config.js"></script>
 <script>
@@ -186,14 +149,17 @@ var STG=["小班","中班","大班","數字學習","ABC學習","同儕關係","�
 
 var SC=[["孩子難過或生氣",{th:"情緒"}],["剛上學／新環境",{th:"新環境"}],["睡前放鬆",{th:"睡前"}],["分離焦慮",{th:"分離焦慮"}],["ABC 學習",{sg:"ABC學習"}],["數字學習",{sg:"數字學習"}],["同儕關係",{sg:"同儕關係"}]];
 var PH=[];
-function esc(s){var d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+var loadError="",returnFocus=null,returnBookId=null,returnFocusType=null,zoomReturnFocus=null;
+function icon(name){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-'+name+'"></use></svg>'}
+function esc(s){var d=document.createElement("div");d.textContent=s||"";return d.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.i);toast.i=setTimeout(function(){t.classList.remove("show")},1800)}
 function mono(t){return t.replace(/^(the|a|an)\s+/i,"").charAt(0).toUpperCase()}
-function cvS(b){var p=(b.ph||[])[0];return p?'background:'+b.c+' url('+p+') center/cover no-repeat':'background:'+b.c}
-function cvC(b){return (b.ph||[]).length?"":mono(b.t)}
-function galH(b,i){var ph=b.ph||[];return ph.length?'<div class="gal">'+ph.map(function(x,j){return '<img src="'+x+'" alt="" onclick="zoom('+i+','+j+')">'}).join("")+'</div>':""}
+function cvS(b){return "--cover-color:"+b.c}
+function cvC(b){var p=(b.ph||[])[0];return p?'<img class="cover-image" src="'+esc(p)+'" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">'+fallbackCover(b,true):fallbackCover(b,false)}
+function fallbackCover(b,hidden){return '<span class="cover-fallback"'+(hidden?' hidden':'')+'><span class="cover-kicker">繪本小聚場</span>'+icon('sprout')+'<span class="cover-title">'+esc(b.t)+'</span></span>'+(!hidden?'<span class="cover-missing">尚無封面照片</span>':'')}
+function galH(b,i){var ph=b.ph||[];return ph.length?'<div class="gal" aria-label="繪本照片">'+ph.map(function(x,j){return '<button class="photo-button" aria-label="放大第 '+(j+1)+' 張繪本照片" onclick="zoom('+i+','+j+')"><img src="'+esc(x)+'" alt="繪本照片 '+(j+1)+'" loading="lazy"></button>'}).join("")+'</div>':""}
 function guideH(b){var g=b.g||{},r=[["讀之前",g.b],["讀的時候",g.m],["讀完之後",g.a]].filter(function(x){return x[1]});return r.length?'<div class="gd"><h4 class="sec" style="margin:0">陪讀指南</h4>'+r.map(function(x){return '<div><b>'+x[0]+'</b><div>'+esc(x[1])+'</div></div>'}).join("")+'</div>':""}
-function zoom(i,j){$("zi").src=B[i].ph[j];$("ovz").classList.add("show")}
+function zoom(i,j){zoomReturnFocus=document.activeElement;$("zi").src=B[i].ph[j];showDialog("ovz")}
 function pvH(){$("f_pv").innerHTML=PH.map(function(x,i){return '<div class="th"><img src="'+x+'" alt=""><button type="button" class="lnk" onclick="rmPh('+i+')">移除</button></div>'}).join("")}
 function rmPh(i){PH.splice(i,1);pvH()}
 function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -204,22 +170,42 @@ function ar(b){var m=mx(b);if(!m)return null;var ok=Object.keys(b.ages).map(Numb
 function rng(b){var r=ar(b);return !r?"待投票":(r[0]===r[1]?r[0]+" 歲":r[0]+"–"+r[1]+" 歲")}
 function fits(b,a){var m=mx(b);return m>0&&(b.ages[a]||0)>=m*.4}
 function multi(id,items,sel,cb,lab,lim){var el=$(id),ex=exp[id];el.innerHTML="";var shown=(lim&&!ex)?items.filter(function(x,i){return i<lim||sel[x]}):items;
-shown.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(sel[x]?" on":"");b.textContent=lab?lab(x):x;b.onclick=function(){sel[x]=!sel[x];multi(id,items,sel,cb,lab,lim);if(cb)cb()};el.appendChild(b)});
-if(lim&&items.length>lim){var m=document.createElement("button");m.type="button";m.className="chip mo";m.textContent=ex?"收合":"更多 +"+(items.length-shown.length);m.onclick=function(){exp[id]=!ex;multi(id,items,sel,cb,lab,lim)};el.appendChild(m)}}
-function single(id,items,key){var el=$(id);el.innerHTML="";items.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(S[key]===x?" on":"");b.textContent=x;b.onclick=function(){S[key]=S[key]===x?"":x;single(id,items,key);render()};el.appendChild(b)})}
-function build(){multi("themes",uq("th"),S.th,render,null,6);multi("styles",uq("st"),S.st,render,null,6);multi("stages",STG,S.sg,render,null,5);single("langs",["中文","英文"],"lang")}
-function ageText(){var v=+$("age").value;$("agev").textContent=v<0?"不限年齡":v+" 歲"}
+shown.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(sel[x]?" on":"");b.textContent=lab?lab(x):x;b.setAttribute("aria-pressed",!!sel[x]);b.onclick=function(){sel[x]=!sel[x];multi(id,items,sel,cb,lab,lim);if(cb)cb();var next=Array.from(el.children).find(function(n){return n.textContent===(lab?lab(x):String(x))});if(next)next.focus({preventScroll:true})};el.appendChild(b)});
+if(lim&&items.length>lim){var m=document.createElement("button");m.type="button";m.className="chip mo";m.textContent=ex?"收合":"更多 +"+(items.length-shown.length);m.setAttribute("aria-expanded",!!ex);m.onclick=function(){exp[id]=!ex;multi(id,items,sel,cb,lab,lim);el.lastElementChild.focus({preventScroll:true})};el.appendChild(m)}}
+function single(id,items,key){var el=$(id);el.innerHTML="";items.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(S[key]===x?" on":"");b.textContent=x;b.setAttribute("aria-pressed",S[key]===x);b.onclick=function(){S[key]=S[key]===x?"":x;single(id,items,key);render();Array.from(el.children).find(function(n){return n.textContent===x}).focus({preventScroll:true})};el.appendChild(b)})}
+function build(){var themes=uq("th"),styles=uq("st");multi("themes",themes,S.th,render,null,6);multi("styles",styles,S.st,render,null,6);multi("stages",STG,S.sg,render,null,5);single("langs",["中文","英文"],"lang");$("theme-row").hidden=!themes.length;$("style-row").hidden=!styles.length;var hasGroups=B.some(function(b){return !!b.gb});$("group-filter").hidden=!hasGroups;$("note-tab").hidden=!hasGroups&&S.tab!=="note"}
+function ageText(){var v=+$("age").value;$("agev").textContent=v<0?"不限年齡":v+" 歲";$("age").setAttribute("aria-valuetext",v<0?"不限年齡":v+" 歲")}
 function tagsH(b,c){var th=c?b.th.slice(0,2):b.th,st=c?b.st.slice(0,1):b.st;return (b.tw?'<span class="g">台灣作家</span>':'')+topk(b.stg,2).map(function(x){return '<span class="g">'+esc(x)+'</span>'}).join("")+th.map(function(x){return "<span>"+esc(x)+"</span>"}).join("")+st.map(function(x){return '<span class="s">'+esc(x)+"</span>"}).join("")}
 function barsH(o,keys,lab,vn){return keys.map(function(k){return '<div class="vb"><span>'+lab(k)+'</span><i style="width:'+Math.min(100,Math.round(o[k]/vn*100))+'%"></i><b>'+o[k]+'</b></div>'}).join("")}
-function closeAll(){["ov","ovf","ovl","ovs","ova","ovz","ovm"].forEach(function(i){$(i).classList.remove("show")})}
-function rateUI(){document.querySelectorAll(".rt").forEach(function(x){x.classList.toggle("on",x.textContent===rt)})}
+function closeAll(){var hadDialog=!!document.querySelector(".ov.show");$("ov").inert=false;document.querySelectorAll(".ov.show").forEach(function(el){el.classList.remove("show");el.setAttribute("aria-hidden","true")});document.body.classList.remove("modal-open");document.querySelectorAll("[data-page]").forEach(function(el){el.inert=false});if(!hadDialog)return;if(returnFocus&&returnFocus.isConnected&&returnFocus.getClientRects().length)returnFocus.focus({preventScroll:true});else{var replacement=returnBookId?document.querySelector('.'+returnFocusType+'[data-book-id="'+CSS.escape(returnBookId)+'"]'):null;(replacement||$("acct")).focus({preventScroll:true})}returnFocus=null;returnBookId=null}
+function showDialog(id){var el=$(id),current=document.querySelector(".ov.show"),same=el.classList.contains("show");if(!current){returnFocus=document.activeElement;returnBookId=returnFocus.dataset.bookId||null;returnFocusType=returnFocus.classList.contains("heart")?"heart":"book-link";}
+if(id!=="ovz")document.querySelectorAll(".ov.show").forEach(function(d){if(d!==el){d.classList.remove("show");d.setAttribute("aria-hidden","true")}});
+el.classList.add("show");el.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");document.querySelectorAll("[data-page]").forEach(function(n){n.inert=true});
+if(id==="ovz"&&$("ov").classList.contains("show")){$("ov").inert=true;$("ov").setAttribute("aria-hidden","true")}
+if(!same||!el.contains(document.activeElement)){var target=el.querySelector("h2")||el.querySelector("button");if(target){if(target.tagName!=="BUTTON")target.setAttribute("tabindex","-1");target.focus({preventScroll:true})}}}
+function closeTopDialog(){if($("ovz").classList.contains("show")&&$("ov").classList.contains("show")){$("ovz").classList.remove("show");$("ovz").setAttribute("aria-hidden","true");$("ov").inert=false;$("ov").setAttribute("aria-hidden","false");if(zoomReturnFocus&&zoomReturnFocus.isConnected)zoomReturnFocus.focus({preventScroll:true});return}closeAll()}
+function rateUI(){document.querySelectorAll(".rt").forEach(function(x){var on=x.textContent===rt;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})}
+function startRecommendation(){if(!need("登入後，就能分享你的共讀經驗"))return;closeAll();showDialog("ovf")}
+function selectShelf(tab){S.tab=tab;document.querySelectorAll(".tab").forEach(function(t){var on=t.dataset.t===tab;t.classList.toggle("on",on);t.setAttribute("aria-pressed",on)});render()}
+function clearFilters(){S.th={};S.st={};S.sg={};S.lang="";S.tw=false;$("q").value="";$("age").value=-1;$("sort").value="";$("nowarn").checked=false;$("onlygb").checked=false;ageText();build();render()}
+function syncFilters(){var tokens=[],add=function(label,clear){tokens.push({label:label,clear:clear})};
+["th","st","sg"].forEach(function(key){Object.keys(S[key]).filter(function(v){return S[key][v]}).forEach(function(v){add(v,function(){delete S[key][v];build()})})});
+if(S.lang)add(S.lang,function(){S.lang="";single("langs",["中文","英文"],"lang")});
+if(S.tw)add("台灣作家",function(){S.tw=false});
+if(+$("age").value>=0)add($("age").value+" 歲",function(){$("age").value=-1;ageText()});
+if($("nowarn").checked)add("未標註注意事項",function(){$("nowarn").checked=false});
+if($("onlygb").checked)add("開放集氣",function(){$("onlygb").checked=false});
+var el=$("active-filters");el.replaceChildren();tokens.forEach(function(token){var b=document.createElement("button");b.className="filter-token";b.textContent=token.label+" ×";b.setAttribute("aria-label","移除條件："+token.label);b.onclick=function(){token.clear();render();$("ftog").focus({preventScroll:true})};el.appendChild(b)});
+$("filter-label").textContent="篩選"+(tokens.length?" · "+tokens.length:"");$("twb").classList.toggle("on",S.tw);$("twb").setAttribute("aria-pressed",S.tw);$("clear-search").hidden=!$("q").value;
+document.querySelectorAll(".scenario").forEach(function(b,i){var spec=SC[i][1],th=Object.keys(S.th).filter(function(k){return S.th[k]}),sg=Object.keys(S.sg).filter(function(k){return S.sg[k]}),on=spec.th?th.length===1&&th[0]===spec.th&&!sg.length:sg.length===1&&sg[0]===spec.sg&&!th.length;b.classList.toggle("on",!!on);b.setAttribute("aria-pressed",!!on)})}
+function emptyState(title,description,action,label,mark){return '<div class="empty"><div class="empty-icon">'+icon(mark||'book')+'</div><h3>'+title+'</h3><p>'+description+'</p>'+(action?'<button class="btn y" onclick="'+action+'">'+label+'</button>':'')+'</div>'}
 function shUrl(){return location.href.split("#")[0]}
 function shUpd(){var t=$("sh_t").value,u=shUrl(),e=encodeURIComponent;
 $("sh_l").href="https://social-plugins.line.me/lineit/share?url="+e(u)+"&text="+e(t);
 $("sh_f").href="https://www.facebook.com/sharer/sharer.php?u="+e(u)+"&quote="+e(t);
 $("sh_x").href="https://twitter.com/intent/tweet?text="+e(t)+"&url="+e(u);
 $("sh_th").href="https://www.threads.net/intent/post?text="+e(t+"\n"+u)}
-function openShare(t){closeAll();$("sh_t").value=t;shUpd();$("sh_n").style.display=navigator.share?"inline-block":"none";$("ovs").classList.add("show")}
+function openShare(t){closeAll();$("sh_t").value=t;shUpd();$("sh_n").style.display=navigator.share?"inline-block":"none";showDialog("ovs")}
 var CFG=window.APP_CONFIG||{},SB=(CFG.SUPABASE_URL||"").replace(/\/+$/,""),KEY=CFG.SUPABASE_KEY||"";
 var S={th:{},st:{},sg:{},lang:"",tw:false,tab:"all"},B=[],loaded=false,me=null,sess=null,fav={},log={},joined={},resp={},voted={},liked={},repN={},VA={},VS={},FA={},FS={},exp={},cur=-1,rt="喜歡",ADM=false,AT="pend",$=function(i){return document.getElementById(i)};
 try{sess=JSON.parse(localStorage.getItem("pbsess")||"null")}catch(e){}
@@ -262,7 +248,7 @@ if(r[6]&&r[6][0])me.nick=r[6][0].nickname;
 me.admin=r[7]===true;
 B.forEach(function(b){b.mine=false});
 if(me.admin)return api("/rest/v1/comment_reports?select=comment_id").then(function(rs){(rs||[]).forEach(function(x){repN[x.comment_id]=(repN[x.comment_id]||0)+1})})})}
-function refresh(){return loadAll().then(loadMine).then(function(){return api("/rest/v1/books?select=id,submitted_by").then(function(rows){var m={};(rows||[]).forEach(function(x){m[x.id]=x.submitted_by});B.forEach(function(b){b.mine=!!(me&&m[b.id]===me.id)})})}).then(function(){acctBtn();build();render()}).catch(function(e){loaded=true;$("list").innerHTML='<div class="empty">資料載入失敗：'+esc(e.message)+'</div>'})}
+function refresh(){loadError="";loaded=false;render();return loadAll().then(loadMine).then(function(){return api("/rest/v1/books?select=id,submitted_by").then(function(rows){var m={};(rows||[]).forEach(function(x){m[x.id]=x.submitted_by});B.forEach(function(b){b.mine=!!(me&&m[b.id]===me.id)})})}).then(function(){acctBtn();build();render()}).catch(function(e){loaded=true;loadError=e.message||"connection";render()})}
 function noteList(){return B.filter(function(b){return b.gb&&joined[b.id]&&b.gb.status!=="collecting"})}
 function list(){
 var q=$("q").value.trim().toLowerCase(),a=+$("age").value,nw=$("nowarn").checked;
@@ -285,17 +271,20 @@ if(s==="vote")o.sort(function(x,y){return y.vn-x.vn});
 if(s==="age")o.sort(function(x,y){return (ar(x)||[99])[0]-(ar(y)||[99])[0]});
 return o}
 function render(){
-var o=list(),nl=noteList();$("count").textContent="共 "+o.length+" 本";$("fc").textContent=Object.keys(fav).filter(function(k){return fav[k]}).length;$("nc").textContent=nl.filter(function(b){return !resp[b.id]}).length;
-if(!loaded){$("list").innerHTML='<div class="empty">載入中…</div>';return}
-if((S.tab==="fav"||S.tab==="note")&&!me){$("stats").innerHTML="";$("list").innerHTML='<div class="empty">登入後，可以使用收藏清單與集氣通知。<br><button class="btn y" style="margin-top:14px" onclick="openAcct()">登入／註冊</button></div>';return}
-if(S.tab==="note"){$("stats").innerHTML="";$("count").textContent=nl.length+" 則通知";$("list").innerHTML=nl.length?nl.map(noteH).join(""):'<div class="empty">還沒有通知。對想要的書按「集氣」，主辦人開團時會顯示在這裡。</div>';return}
-var lg=Object.keys(log),mo=today().slice(0,7);$("stats").innerHTML=S.tab==="log"?'<div class="box" style="padding:10px 14px;margin-bottom:14px">累積已讀 <b>'+lg.length+'</b> 本・本月 <b>'+lg.filter(function(k){return (log[k].d||"").slice(0,7)===mo}).length+'</b> 本・標為「很愛」<b>'+lg.filter(function(k){return log[k].r==="很愛"}).length+'</b> 本</div>':"";
-var any=B.some(function(b){return b.status==="published"});
-$("list").innerHTML=o.length?o.map(function(b,i){var ix=B.indexOf(b);
-return '<div class="card" style="animation-delay:'+(i*40)+'ms" onclick="openB('+ix+')"><div class="cv" style="'+cvS(b)+'">'+cvC(b)+
-'<span class="age">'+rng(b)+'</span><button class="heart'+(fav[b.id]?" on":"")+'" onclick="event.stopPropagation();tf('+ix+')">'+(fav[b.id]?"♥":"♡")+'</button></div>'+
-'<div class="cb"><h3>'+esc(b.t)+'</h3><div class="mt">'+(b.a?esc(b.a)+' · ':'')+b.lang+' · 有幫助 '+b.n+(b.gb?' · 集氣 '+b.gb.n+'/'+b.gb.t:'')+'</div><div class="tg">'+tagsH(b,1)+'</div>'+
-(b.status!=="published"?'<div class="warnb">審核中，通過後才會公開給大家</div>':'')+(b.w?'<div class="warnb">有注意事項</div>':'')+(log[b.id]?'<div><span class="stamp">已讀 '+esc(log[b.id].d)+' · '+esc(log[b.id].r)+'</span>'+(log[b.id].n?'<div class="mt">'+esc(log[b.id].n)+'</div>':'')+'</div>':'')+'</div></div>'}).join(""):'<div class="empty">'+(any?'沒有符合的書，換個條件試試。':'還沒有任何繪本，成為第一位分享的家長吧。')+'</div>'}
+var o=list(),nl=noteList();syncFilters();$("count").textContent=loaded?(S.tab==="note"?nl.length+" 則通知":"共 "+o.length+" 本繪本"):"正在整理書架…";$("fc").textContent=Object.keys(fav).filter(function(k){return fav[k]}).length;$("nc").textContent=nl.filter(function(b){return !resp[b.id]}).length;
+$("list").setAttribute("aria-busy",!loaded);$("stats").innerHTML="";$("share").hidden=!(me&&(S.tab==="fav"||S.tab==="log")&&o.length);$("rand").hidden=S.tab!=="all"||!o.length||!!loadError;
+var descriptions={all:"一則真心分享，讓選書多一點方向。",fav:"把心動的故事留下來，下次借書或選書時再來看看。",log:"記下讀過的故事，也留住一起長大的小時刻。",note:"你關注的繪本，有新消息會出現在這裡。"};$("browse-description").textContent=descriptions[S.tab];
+if(loadError){$("count").textContent="書架暫時無法載入";$("list").innerHTML=emptyState("書架暫時連不上","請稍後再試一次，你的收藏與閱讀紀錄仍保留在帳號裡。","refresh()","重新載入","leaf");return}
+if(!loaded){$("list").innerHTML='<div class="empty loading"><div class="empty-icon">'+icon('book')+'</div><p>正在把好故事放上書架…</p></div>';return}
+if((S.tab==="fav"||S.tab==="log"||S.tab==="note")&&!me){$("list").innerHTML=emptyState(S.tab==="log"?"留住一起讀過的時光":"為你們，留一個小小書架","用 Email 登入，就能收藏想讀的書、記下孩子的閱讀反應。不需要設定密碼。","openAcct()","登入，開啟我的書架","heart");return}
+if(S.tab==="note"){$("list").innerHTML=nl.length?nl.map(noteH).join(""):emptyState("目前還沒有新消息","你參與集氣的書開團後，相關資訊會出現在這裡。",null,null,"leaf");return}
+var lg=Object.keys(log),mo=today().slice(0,7);$("stats").innerHTML=S.tab==="log"?'<div class="box reading-stats">累積已讀 <b>'+lg.length+'</b> 本 · 本月 <b>'+lg.filter(function(k){return (log[k].d||"").slice(0,7)===mo}).length+'</b> 本 · 標為「很愛」<b>'+lg.filter(function(k){return log[k].r==="很愛"}).length+'</b> 本</div>':"";
+if(o.length){$("list").innerHTML=o.map(function(b,i){var ix=B.indexOf(b);return '<article class="card" style="animation-delay:'+Math.min(i*35,280)+'ms"><div class="cv" style="'+cvS(b)+'">'+cvC(b)+'<span class="age">'+(mx(b)?'家長建議 '+rng(b):'年齡待家長分享')+'</span><button class="heart'+(fav[b.id]?" on":"")+'" data-book-id="'+esc(b.id)+'" aria-label="'+(fav[b.id]?'取消收藏：':'收藏：')+esc(b.t)+'" aria-pressed="'+!!fav[b.id]+'" onclick="tf('+ix+')">'+(fav[b.id]?"♥":"♡")+'</button></div><div class="cb"><h3><button class="book-link" data-book-id="'+esc(b.id)+'" onclick="openB('+ix+')">'+esc(b.t)+'</button></h3><div class="mt">'+(b.a?esc(b.a)+' · ':'')+esc(b.lang)+'</div>'+(b.r?'<p class="card-review">'+esc(b.r)+'</p>':'')+'<div class="tg">'+tagsH(b,1)+'</div>'+(b.status!=="published"?'<div class="warnb">'+(b.status==="hidden"?'已下架，僅你與管理者可見':'審核中，通過後才會公開')+'</div>':'')+(b.w?'<div class="mt">有內容注意事項，請見推薦詳情</div>':'')+(log[b.id]?'<span class="stamp">已讀 · '+esc(log[b.id].r)+'</span>':'')+'<div class="card-foot"><span>'+icon('heart')+' '+(b.n?b.n+' 位家長覺得有幫助':'等你分享閱讀感受')+'</span><span class="read-more">看看推薦 ↗</span></div></div></article>'}).join("");return}
+var filtered=!!$("q").value.trim()||$("active-filters").children.length>0;
+if(filtered){$("list").innerHTML=emptyState("還沒找到剛剛好的那本","試試其他關鍵字，或放寬篩選條件，讓更多故事出現在書架上。","clearFilters()","清除條件，再找找","search");return}
+if(S.tab==="fav"||S.tab==="log"){$("list").innerHTML=emptyState(S.tab==="fav"?"第一本收藏，會是哪一本呢？":"一起讀的故事，從這裡開始記","到探索繪本看看，將喜歡的書加入收藏，也可以記下閱讀心得。","selectShelf('all')","去探索繪本","heart");return}
+$("list").innerHTML=emptyState("第一個好故事，等你來分享。","這座小小書架剛剛開始。推薦一本你和孩子讀過、想再讀一次的繪本吧。","startRecommendation()","分享第一本繪本","sprout")
+}
 function tf(i){var b=B[i];if(!need("登入後才能加入收藏"))return;var on=!fav[b.id];(on?api("/rest/v1/favorites",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id}}):api("/rest/v1/favorites?book_id=eq."+b.id+"&user_id=eq."+me.id,{m:"DELETE"})).then(function(){fav[b.id]=on;toast(on?"已加入收藏":"已移出收藏");render();if($("ov").classList.contains("show"))openB(i,1)}).catch(err)}
 function gbH(b,i){var g=b.gb;if(!g)return"";var p=Math.min(100,Math.round(g.n/g.t*100)),st;
 if(g.status!=="collecting")st='<div class="mt">'+(g.status==="open"?"主辦人已開團。":"這團已截止。")+(joined[b.id]?'請到「通知」分頁查看開團資訊。':'集氣的家長已收到通知。')+'</div>';
@@ -311,15 +300,15 @@ VA={};VS={};
 var ak=Object.keys(b.ages).filter(function(k){return b.ages[k]>0}).sort(function(x,y){return x-y}),sk=topk(b.stg,10);
 var cms=b.cm.map(function(c){return c.st==="hidden"?'<div class="cm mt">此留言已被隱藏。</div>':'<div class="cm"><div class="mt">'+esc(c.n)+(c.a?' · '+esc(c.a):'')+' · '+esc(c.d)+'</div><div>'+esc(c.c)+'</div>'+(me&&c.uid!==me.id?'<button class="lnk" onclick="rpt(\''+c.id+'\')">檢舉</button>':'')+(me&&c.uid===me.id?'<button class="lnk" onclick="delCm('+i+',\''+c.id+'\')">刪除我的留言</button>':'')+'</div>'}).join("")||'<div class="mt">還沒有留言，你可以是第一個。</div>';
 var vf=voted[b.id]?'<div class="mt">你已經送出過建議，謝謝！</div>':'<div class="vf"><div class="mt">讀過這本書了嗎？告訴其他家長你覺得適合誰（可複選）'+(me?'':'。需要先<a href="#" onclick="openAcct();return false">登入</a>')+'</div><div class="fr" id="va"></div><div class="fr" id="vs"></div><button class="btn y" onclick="vote('+i+')">送出我的建議</button></div>';
-$("md").innerHTML='<button class="btn x" onclick="closeAll()">✕</button><div class="cv" style="'+cvS(b)+'">'+cvC(b)+'</div><div class="mb"><div><h2 style="margin:0">'+esc(b.t)+'</h2><div class="mt">'+(b.a?esc(b.a)+' · ':'')+b.lang+'</div></div><div class="tg">'+tagsH(b)+'</div><div>'+esc(b.r)+'</div>'+
+$("ov").setAttribute("aria-labelledby","book-title");$("md").innerHTML='<button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="cv" style="'+cvS(b)+'">'+cvC(b)+'</div><div class="mb"><div><h2 id="book-title" style="margin:0" tabindex="-1">'+esc(b.t)+'</h2><div class="mt">'+(b.a?esc(b.a)+' · ':'')+b.lang+'</div></div><div class="tg">'+tagsH(b)+'</div><div>'+esc(b.r)+'</div>'+
 (b.k?'<div class="say">孩子的反應：'+esc(b.k)+'</div>':'')+(b.w?'<div class="warnb">注意：'+esc(b.w)+'</div>':'<div class="warnb" style="background:var(--acc2)">沒有特別需要注意的內容</div>')+galH(b,i)+guideH(b)+
 (pub?'<div><h4 class="sec">家長怎麼看適合的年齡與階段 <span class="mt">（'+b.vn+' 位家長投票）</span></h4>'+barsH(b.ages,ak,function(k){return k+" 歲"},Math.max(b.vn,1))+'<div style="height:8px"></div>'+barsH(b.stg,sk,esc,Math.max(b.vn,1))+'</div>'+vf:'<div class="warnb">這本書正在審核中，通過後才會開放投票與留言。</div>')+
 (pub?'<div class="row2"><button class="btn" onclick="tf('+i+')">'+(fav[b.id]?"已收藏":"加入收藏")+'</button><button class="btn" onclick="lk('+i+')">有幫助 '+b.n+'</button><button class="btn" onclick="openLog('+i+')">'+(log[b.id]?"編輯閱讀紀錄":"記錄閱讀")+'</button><button class="btn" onclick="shareB('+i+')">分享給朋友</button></div>':'')+
 '<div class="row2"><a class="btn y" target="_blank" rel="noopener" href="https://search.books.com.tw/search/query/key/'+e+'">去博客來看看</a><a class="btn" target="_blank" rel="noopener" href="https://www.amazon.com/s?k='+e+'">去 Amazon 看看</a></div>'+(pub?gbH(b,i)+
 '<div><h4 class="sec">家長留言（'+b.cm.filter(function(c){return c.st!=="hidden"}).length+'）</h4>'+cms+'</div>'+
-'<div class="vf"><div class="mt">分享你家孩子的閱讀心得，幫助下一位家長'+(me?'':'。需要先<a href="#" onclick="openAcct();return false">登入</a>')+'</div><div class="fr"><input type="text" id="ca" placeholder="孩子年齡（選填）" style="width:130px"></div><textarea id="cc" maxlength="200" placeholder="孩子的反應、適合的情境、要注意的地方…"></textarea><button class="btn y" onclick="addCm('+i+')">送出留言</button></div>':'')+'</div>';
+'<div class="vf"><div class="mt">分享你家孩子的閱讀心得，幫助下一位家長'+(me?'':'。需要先<a href="#" onclick="openAcct();return false">登入</a>')+'</div><div class="fr"><label class="field" for="ca">孩子年齡（選填）<input type="text" id="ca" placeholder="例如：3 歲半" style="width:150px"></label></div><label class="field" for="cc">你的共讀心得<textarea id="cc" maxlength="200" placeholder="孩子的反應、適合的情境、要注意的地方…"></textarea></label><button class="btn y" onclick="addCm('+i+')">送出留言</button></div>':'')+'</div>';
 if(pub&&!voted[b.id]){multi("va",AG,VA,null,function(x){return x+" 歲"});multi("vs",STG,VS)}
-$("ov").classList.add("show");$("md").scrollTop=sc}
+showDialog("ov");$("md").scrollTop=sc}
 function vote(i){var b=B[i];if(!need("登入後才能投票"))return;var ak=Object.keys(VA).filter(function(k){return VA[k]}).map(Number),sk=Object.keys(VS).filter(function(k){return VS[k]});
 if(!ak.length&&!sk.length){toast("請至少選一個年齡或階段");return}
 api("/rest/v1/book_votes",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id,ages:ak,stages:sk}}).then(function(){ak.forEach(function(k){b.ages[k]=(b.ages[k]||0)+1});sk.forEach(function(k){b.stg[k]=(b.stg[k]||0)+1});b.vn++;voted[b.id]=1;toast("謝謝你的建議");openB(i,1);render()}).catch(function(e){if(e.code==="23505"){voted[b.id]=1;toast("你已經投過票了")}else err(e)})}
@@ -328,11 +317,11 @@ api("/rest/v1/comments",{m:"POST",h:{Prefer:"return=representation"},b:{book_id:
 function delCm(i,id){api("/rest/v1/comments?id=eq."+id,{m:"DELETE"}).then(function(){B[i].cm=B[i].cm.filter(function(c){return c.id!==id});toast("已刪除");openB(i,1)}).catch(err)}
 function rpt(id){if(!need("登入後才能檢舉"))return;api("/rest/v1/comment_reports",{m:"POST",h:{Prefer:"return=minimal"},b:{comment_id:id}}).then(function(){toast("已收到檢舉，謝謝")}).catch(function(e){toast(e.code==="23505"?"你已經檢舉過了":"操作失敗："+e.message)})}
 function lk(i){var b=B[i];if(!need("登入後才能按有幫助"))return;if(liked[b.id]){toast("你已經按過了");return}api("/rest/v1/helpful",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id}}).then(function(){liked[b.id]=1;b.n++;toast("謝謝你的回饋");openB(i,1);render()}).catch(function(e){if(e.code==="23505"){liked[b.id]=1;toast("你已經按過了")}else err(e)})}
-function openLog(i){if(!need("登入後才能記錄閱讀"))return;cur=i;var b=B[i],o=log[b.id]||{};rt=o.r||"喜歡";$("lg_t").textContent="記錄《"+b.t+"》";$("lg_d").value=o.d||today();$("lg_n").value=o.n||"";rateUI();closeAll();$("ovl").classList.add("show")}
+function openLog(i){if(!need("登入後才能記錄閱讀"))return;cur=i;var b=B[i],o=log[b.id]||{};rt=o.r||"喜歡";$("lg_t").textContent="記錄《"+b.t+"》";$("lg_d").value=o.d||today();$("lg_n").value=o.n||"";rateUI();closeAll();showDialog("ovl")}
 function shareB(i){var b=B[i],l=log[b.id];openShare("《"+b.t+"》"+(b.a?"— "+b.a:"")+"\n"+b.lang+"繪本｜多數家長認為適合 "+rng(b)+"｜"+topk(b.stg,2).join("、")+"\n"+(b.r?"心得："+b.r+"\n":"")+(l?"我家孩子的反應："+l.r+(l.n?" "+l.n:"")+"\n":"")+b.th.concat(b.st).map(function(x){return "#"+x}).join(" ")+" #繪本 #親子共讀")}
 function upPhotos(){if(!PH.length)return Promise.resolve([]);return ensure().then(function(){return Promise.all(PH.map(function(d,i){var path=me.id+"/"+Date.now()+"-"+i+".jpg";return fetch(d).then(function(r){return r.blob()}).then(function(bl){return fetch(SB+"/storage/v1/object/book-photos/"+path,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+sess.access_token,"Content-Type":"image/jpeg"},body:bl})}).then(function(r){if(!r.ok)throw new Error("照片上傳失敗");return path})}))})}
 function acctBtn(){$("acct").textContent=me?me.nick+"（已登入）":"登入／註冊";$("admb").style.display=me&&me.admin?"inline":"none"}
-function openAcct(){closeAll();$("ac_out").style.display=me?"none":"grid";$("ac_in").style.display=me?"grid":"none";if(me){$("ac_me").textContent="已登入："+me.email;$("ac_nn").value=me.nick}$("ova").classList.add("show")}
+function openAcct(){closeAll();$("ac_out").style.display=me?"none":"grid";$("ac_in").style.display=me?"grid":"none";if(me){$("ac_me").textContent="已登入："+me.email;$("ac_nn").value=me.nick}showDialog("ova")}
 /* ===== 管理後台 ===== */
 function admH(){var h="";
 if(AT==="pend"){var l=B.filter(function(b){return b.status!=="published"});h=l.map(function(b){var i=B.indexOf(b);return '<div class="adr"><div class="fr"><b>'+esc(b.t)+'</b><span class="mt">'+(b.a?esc(b.a)+' · ':'')+b.lang+' · '+(b.status==="pending"?"待審核":"已下架")+'</span></div><div>'+esc(b.r)+'</div>'+galH(b,i)+(b.w?'<div class="warnb">注意：'+esc(b.w)+'</div>':'')+'<div class="row2"><button class="btn y" onclick="bkSet('+i+',\'published\')">核准公開</button><button class="btn" onclick="bkSet('+i+',\'hidden\')">下架</button><button class="btn" onclick="bkDel('+i+')">刪除</button></div></div>'}).join("")||'<div class="mt">目前沒有待處理的投稿。</div>';return h}
@@ -344,7 +333,7 @@ return s+'</div>'}).join("")||'<div class="mt">還沒有已公開的書。</div>
 var items=[];B.forEach(function(b,i){b.cm.forEach(function(c){if(c.st==="hidden"||repN[c.id])items.push('<div class="adr"><div class="mt">《'+esc(b.t)+'》· '+esc(c.n)+' · '+esc(c.d)+' · 被檢舉 '+(repN[c.id]||0)+' 次'+(c.st==="hidden"?'（已隱藏）':'')+'</div><div>'+esc(c.c)+'</div><div class="row2"><button class="btn" onclick="cmAct('+i+',\''+c.id+'\',1)">隱藏</button><button class="btn" onclick="cmAct('+i+',\''+c.id+'\',2)">刪除</button><button class="btn" onclick="cmAct('+i+',\''+c.id+'\',0)">保留並清除檢舉</button></div></div>')})});
 return items.join("")||'<div class="mt">目前沒有被檢舉或隱藏的留言。</div>'}
 function admR(){$("am_c").innerHTML=admH();document.querySelectorAll("#am_body [data-a]").forEach(function(x){x.classList.toggle("y",x.dataset.a===AT)})}
-function admOpen(){if(!me||!me.admin){toast("需要管理者身分");return}closeAll();admR();$("ovm").classList.add("show")}
+function admOpen(){if(!me||!me.admin){toast("需要管理者身分");return}closeAll();admR();showDialog("ovm")}
 function after(p,msg){return p.then(function(){if(msg)toast(msg);admR();render()}).catch(err)}
 function bkSet(i,st){var b=B[i];after(api("/rest/v1/books?id=eq."+b.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:st}}).then(function(){b.status=st}),st==="published"?"已公開":"已下架");if(st==="published")setTimeout(function(){refresh().then(admR)},400)}
 function bkDel(i){var b=B[i];if(!confirm("確定刪除《"+b.t+"》？無法復原。"))return;after(api("/rest/v1/books?id=eq."+b.id,{m:"DELETE"}).then(function(){B.splice(i,1)}),"已刪除")}
@@ -361,18 +350,23 @@ else p=api("/rest/v1/comment_reports?comment_id=eq."+id,{m:"DELETE"}).then(funct
 after(p)}
 /* ===== 事件 ===== */
 function wire(){
-["ov","ovf","ovl","ovs","ova","ovm"].forEach(function(id){$(id).addEventListener("click",function(e){if(e.target===this)closeAll()})});
-document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAll()});
-$("ovz").onclick=function(){this.classList.remove("show")};
-SC.forEach(function(s){var b=document.createElement("button");b.className="btn";b.textContent=s[0];b.onclick=function(){S.th={};S.sg={};if(s[1].th)S.th[s[1].th]=true;if(s[1].sg)S.sg[s[1].sg]=true;build();render();toast("已套用："+(s[1].th||s[1].sg))};$("scen").appendChild(b)});
+var labels={ov:"繪本推薦詳情",ovf:"分享繪本",ovl:"記錄閱讀",ovs:"分享好故事",ova:"登入與帳號",ovm:"管理後台",ovz:"繪本照片放大檢視"};
+Object.keys(labels).forEach(function(id){var el=$(id);el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-label",labels[id]);el.setAttribute("aria-hidden","true");el.addEventListener("click",function(e){if(e.target===this)closeTopDialog()})});
+document.addEventListener("keydown",function(e){var active=$("ovz").classList.contains("show")?$("ovz"):document.querySelector(".ov.show");if(!active)return;if(e.key==="Escape"){e.preventDefault();closeTopDialog();return}if(e.key!=="Tab")return;var stops=Array.from(active.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex="0"]')).filter(function(n){return !n.disabled&&n.tabIndex>=0&&n.getClientRects().length});if(!stops.length){e.preventDefault();return}var first=stops[0],last=stops[stops.length-1];if(e.shiftKey&&(document.activeElement===first||!stops.includes(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!active.contains(document.activeElement))){e.preventDefault();first.focus()}});
+var scenarioIcons=["heart","school","moon","sprout","abc","numbers","friends"],scenarioColors=["#f3e6de","#edf0df","#eaeaf2","#f4ecd8","#e5ede7","#f2e8d9","#f0e5e7"],scenarioInks=["#ab735b","#7b8d54","#8882a5","#ad8d4b","#638970","#ac8756","#a27682"];
+SC.forEach(function(spec,i){var b=document.createElement("button");b.type="button";b.className="scenario";b.style.setProperty("--scenario-bg",scenarioColors[i]);b.style.setProperty("--scenario-ink",scenarioInks[i]);b.innerHTML=icon(scenarioIcons[i])+"<span>"+esc(spec[0])+"</span>";b.setAttribute("aria-pressed","false");b.onclick=function(){var on=this.getAttribute("aria-pressed")==="true";S.th={};S.sg={};if(!on){if(spec[1].th)S.th[spec[1].th]=true;if(spec[1].sg)S.sg[spec[1].sg]=true}selectShelf("all");build();render();$("discover").scrollIntoView({block:"start"})};$("scen").appendChild(b)});
 $("age").oninput=function(){ageText();render()};
 ["q","sort","nowarn","onlygb"].forEach(function(i){$(i).addEventListener("input",render)});
-$("reset").onclick=function(){S.th={};S.st={};S.sg={};S.lang="";S.tw=false;$("twb").classList.remove("on");$("q").value="";$("age").value=-1;$("sort").value="";$("nowarn").checked=false;$("onlygb").checked=false;ageText();build();render()};
-document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("on")});t.classList.add("on");S.tab=t.dataset.t;render()}});
+$("q").addEventListener("keydown",function(e){if(e.key==="Enter"){this.blur();$("list").scrollIntoView({block:"start"})}});
+$("clear-search").onclick=function(){$("q").value="";render();$("q").focus()};
+$("reset").onclick=clearFilters;
+document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){selectShelf(t.dataset.t)}});
+document.querySelectorAll("[data-explore]").forEach(function(a){a.onclick=function(){selectShelf("all")}});
+$("my-shelf").onclick=function(){selectShelf("fav");$("discover").scrollIntoView({block:"start"})};
 $("rand").onclick=function(){var o=list();if(!o.length){toast("目前沒有可挑的書");return}openB(B.indexOf(o[Math.floor(Math.random()*o.length)]))};
-$("twb").onclick=function(){S.tw=!S.tw;this.classList.toggle("on",S.tw);render()};
-$("ftog").onclick=function(){$("fbody").classList.toggle("open")};
-$("addb").onclick=function(){if(!need("登入後才能分享繪本"))return;closeAll();$("ovf").classList.add("show")};
+$("twb").onclick=function(){S.tw=!S.tw;render()};
+$("ftog").onclick=function(){var open=$("fbody").classList.toggle("open");this.setAttribute("aria-expanded",open)};
+$("addb").onclick=startRecommendation;document.querySelectorAll('[data-action="share-book"]').forEach(function(b){b.onclick=startRecommendation});
 $("lg_ok").onclick=function(){var b=B[cur],o={d:$("lg_d").value||today(),r:rt,n:$("lg_n").value.trim().slice(0,80)};api("/rest/v1/reading_log?on_conflict=book_id,user_id",{m:"POST",h:{Prefer:"resolution=merge-duplicates,return=minimal"},b:{book_id:b.id,read_on:o.d,rating:o.r,note:o.n}}).then(function(){log[b.id]=o;closeAll();render();toast("已記錄")}).catch(err)};
 $("lg_del").onclick=function(){var b=B[cur];api("/rest/v1/reading_log?book_id=eq."+b.id+"&user_id=eq."+me.id,{m:"DELETE"}).then(function(){delete log[b.id];closeAll();render();toast("已移除紀錄")}).catch(err)};
 $("sh_t").addEventListener("input",shUpd);
@@ -381,22 +375,23 @@ $("sh_n").onclick=function(){try{navigator.share({title:"繪本小聚場",text:$
 $("share").onclick=function(){var lgv=S.tab==="log",l=B.filter(function(b){return lgv?log[b.id]:fav[b.id]}).map(function(b){return "・"+b.t+(b.a?"（"+b.a+"）":"")+(lgv?" "+log[b.id].r:"")});if(!l.length){toast(lgv?"還沒有閱讀紀錄":"收藏清單還是空的，登入後可加入收藏");return}openShare((lgv?"我家的繪本閱讀紀錄（"+l.length+" 本）":"我的繪本收藏清單")+"\n"+l.join("\n")+"\n#繪本 #親子共讀")};
 $("f_ph").onchange=function(){var inp=this;Array.prototype.slice.call(inp.files).forEach(function(f){if(!/^image\//.test(f.type))return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){if(PH.length>=4){toast("最多 4 張照片");return}var k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);PH.push(c.toDataURL("image/jpeg",.78));pvH()};im.src=r.result};r.readAsDataURL(f)});inp.value=""};
 $("f_ok").onclick=function(){if(!need("登入後才能分享繪本"))return;var v=function(i){return $(i).value.trim()},sp=function(s){return s.split(/[,，、]/).map(function(x){return x.trim()}).filter(Boolean)};
-if(!v("f_t")){toast("請先輸入書名");return}
+if(!$("f_t").reportValidity())return;
 if(PH.length&&!$("f_ck").checked){toast("請先勾選：照片中沒有孩子");return}
 var btn=this;btn.disabled=true;
 upPhotos().then(function(paths){return api("/rest/v1/books",{m:"POST",h:{Prefer:"return=representation"},b:{title:v("f_t"),author:v("f_a"),lang:v("f_lang"),is_taiwan:$("f_tw").checked,themes:sp(v("f_th")),styles:sp(v("f_st")),review:v("f_r"),kid_reaction:v("f_k"),warning:v("f_w"),guide_before:v("g_b"),guide_during:v("g_m"),guide_after:v("g_a"),photos:paths,status:"pending",suggested_ages:Object.keys(FA).filter(function(k){return FA[k]}).map(Number),suggested_stages:Object.keys(FS).filter(function(k){return FS[k]})}})}).then(function(rows){var x=rows[0];return me.admin?api("/rest/v1/books?id=eq."+x.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:"published"}}):null}).then(function(){
 ["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
 btn.disabled=false;closeAll();toast(me.admin?"已公開":"已送出，審核通過後會公開");return refresh()}).catch(function(e){btn.disabled=false;err(e)})};
-$("ac_ok").onclick=function(){var e=$("ac_e").value.trim(),n=$("ac_n").value.trim();if(e.indexOf("@")<1){toast("請輸入有效的 Email");return}
-api("/auth/v1/otp?redirect_to="+encodeURIComponent(location.origin+location.pathname),{m:"POST",b:{email:e,create_user:true,data:{nickname:(n||"匿名家長").slice(0,12)}}}).then(function(){$("ac_sent").textContent="登入連結已寄到 "+e+"，請到信箱點擊連結（可能在垃圾郵件匣）。";toast("已寄出登入連結")}).catch(err)};
+$("ac_ok").onclick=function(){var input=$("ac_e"),e=input.value.trim(),n=$("ac_n").value.trim(),btn=this;if(!input.reportValidity())return;btn.disabled=true;btn.textContent="正在寄送…";$("ac_sent").textContent="";
+api("/auth/v1/otp?redirect_to="+encodeURIComponent(location.origin+location.pathname),{m:"POST",b:{email:e,create_user:true,data:{nickname:(n||"匿名家長").slice(0,12)}}}).then(function(){$("ac_sent").textContent="登入連結已寄到 "+e+"。請查看信箱，也別忘了垃圾郵件匣。";toast("已寄出登入連結")}).catch(function(e){$("ac_sent").textContent="寄送失敗："+e.message}).finally(function(){btn.disabled=false;btn.textContent="寄送登入連結"})};
 $("ac_sv").onclick=function(){var n=$("ac_nn").value.trim().slice(0,12);if(!n){toast("請輸入暱稱");return}api("/rest/v1/profiles?id=eq."+me.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{nickname:n}}).then(function(){me.nick=n;acctBtn();toast("已更新暱稱")}).catch(err)};
 $("ac_off").onclick=function(){api("/auth/v1/logout",{m:"POST",b:{}}).catch(function(){}).then(function(){sess=null;me=null;saveSess();closeAll();toast("已登出");return refresh()})};
 $("admb").onclick=admOpen;
 document.querySelectorAll("#am_body [data-a]").forEach(function(x){x.onclick=function(){AT=x.dataset.a;admR()}});
 $("acct").onclick=openAcct}
 /* ===== 啟動 ===== */
-if(!SB||!KEY){document.addEventListener("DOMContentLoaded",function(){$("list").innerHTML='<div class="empty">尚未設定資料庫連線，請檢查 config.js。</div>'})}
-else{ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);build();render();fromHash().then(whoami).then(refresh)}
+ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);build();render();
+if(!SB||!KEY){loaded=true;loadError="missing configuration";render()}
+else fromHash().then(whoami).then(refresh);
 </script>
 </body>
 </html>
