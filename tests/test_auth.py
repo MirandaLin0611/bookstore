@@ -43,6 +43,11 @@ class EmailLoginTests(unittest.TestCase):
         self.errors = []
         self.verify_status = 200
         self.send_status = 200
+        self.books = []
+        self.stage_votes = []
+        self.favorites = set()
+        self.favorite_status = 201
+        self.stale_favorites = False
         self.nickname = '原本的暱稱'
         self.held_users = []
         self.hold_user = False
@@ -92,6 +97,26 @@ class EmailLoginTests(unittest.TestCase):
                 return
         elif path == '/auth/v1/token':
             data = {'access_token': 'test-renewed', 'refresh_token': 'test-renewed-refresh', 'expires_in': 3600}
+        elif path == '/rest/v1/books':
+            data = self.books
+        elif path == '/rest/v1/book_stage_votes':
+            data = self.stage_votes
+        elif path == '/rest/v1/book_voter_counts':
+            data = [{'book_id': b['id'], 'voters': 1} for b in self.books]
+        elif path == '/rest/v1/favorites':
+            if req.method == 'POST':
+                if self.favorite_status >= 400:
+                    status, data = self.favorite_status, {'message': 'test failed save'}
+                elif body['book_id'] in self.favorites:
+                    status, data = 409, {'code': '23505', 'message': 'test duplicate'}
+                else:
+                    self.favorites.add(body['book_id'])
+            elif req.method == 'DELETE':
+                from urllib.parse import urlsplit, parse_qs
+                bid = parse_qs(urlsplit(req.url).query)['book_id'][0].removeprefix('eq.')
+                self.favorites.discard(bid)
+            else:
+                data = [] if self.stale_favorites else [{'book_id': bid} for bid in self.favorites]
         elif path == '/rest/v1/profiles':
             if req.method == 'PATCH':
                 self.nickname = body['nickname']
@@ -240,6 +265,206 @@ class EmailLoginTests(unittest.TestCase):
         self.page.wait_for_function('sessionSyncPromise===null')
         expect(self.page.locator('#acct')).to_have_text('登入／註冊')
         self.assertIsNone(self.page.evaluate('localStorage.getItem("pbsess")'))
+
+
+    def load_flow_books(self):
+        def book(bid, title, themes=None):
+            return {'id': bid, 'title': title, 'author': '測試作者', 'lang': '中文',
+                    'status': 'published', 'submitted_by': 'other-parent',
+                    'themes': themes or [], 'styles': [], 'photos': [], 'review': '測試共讀心得'}
+        self.books = [book('emotion-vote', '情緒書（投票）'),
+                      book('emotion-theme', '情緒書（主題）', ['情緒']),
+                      book('sleep-vote', '睡前書（投票）'),
+                      book('sleep-theme', '睡前書（主題）', ['睡前']),
+                      book('numbers-vote', '數字書')]
+        self.stage_votes = [{'book_id': 'emotion-vote', 'stage': '情緒管理', 'votes': 1},
+                            {'book_id': 'sleep-vote', 'stage': '睡前共讀', 'votes': 1},
+                            {'book_id': 'numbers-vote', 'stage': '數字學習', 'votes': 1}]
+        self.page.reload(wait_until='networkidle')
+
+    def finish_open_login(self):
+        self.page.locator('#ac_e').fill('parent@example.com')
+        self.page.locator('#ac_ok').click()
+        expect(self.page.locator('#ac_code')).to_be_visible()
+        self.page.locator('#ac_code').fill('123456')
+        self.page.locator('#ac_confirm').click()
+        self.page.wait_for_function('!loginBusy')
+        expect(self.page.locator('#acct')).to_contain_text(self.nickname)
+
+    def favorite_writes(self):
+        return [r for r in self.requests if r['path'] == '/rest/v1/favorites' and r['method'] != 'GET']
+
+    def open_book_for_favorite(self):
+        self.load_flow_books()
+        self.page.get_by_role('button', name='情緒書（投票）', exact=True).click()
+        self.page.get_by_role('button', name='加入收藏', exact=True).click()
+        expect(self.page.locator('#ova')).to_be_visible()
+
+    def test_emotion_and_sleep_scenarios_match_manual_filters(self):
+        self.load_flow_books()
+        for label, stage, titles in [
+            ('孩子難過或生氣', '情緒管理', ['情緒書（投票）', '情緒書（主題）']),
+            ('睡前放鬆', '睡前共讀', ['睡前書（投票）', '睡前書（主題）'])]:
+            with self.subTest(stage=stage):
+                button = self.page.get_by_role('button', name=label, exact=True)
+                button.click()
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                self.page.get_by_role('button', name='移除條件：'+stage, exact=True).click()
+                expect(self.page.locator('.card')).to_have_count(5)
+                if self.page.locator('#ftog').get_attribute('aria-expanded') == 'false':
+                    self.page.locator('#ftog').click()
+                if self.page.locator('#stages').get_by_role('button', name=stage, exact=True).count() == 0:
+                    self.page.locator('#stages .mo').click()
+                self.page.locator('#stages').get_by_role('button', name=stage, exact=True).click()
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                expect(button).to_have_attribute('aria-pressed', 'true')
+                button.click()
+                expect(self.page.locator('.card')).to_have_count(5)
+
+    def test_other_scenarios_still_work(self):
+        self.load_flow_books()
+        self.page.get_by_role('button', name='數字學習', exact=True).first.click()
+        expect(self.page.locator('.book-link')).to_have_text(['數字書'])
+
+    def test_recommendation_resumes_after_code_login(self):
+        self.page.locator('#addb').click()
+        saved = self.page.evaluate('JSON.parse(sessionStorage.getItem("pbintent"))')
+        self.assertEqual(saved['kind'], 'recommend')
+        self.assertNotIn('email', saved)
+        self.assertNotIn('access_token', saved)
+        self.finish_open_login()
+        expect(self.page.locator('#ovf')).to_be_visible()
+        expect(self.page.locator('#ova')).not_to_be_visible()
+        self.assertIsNone(self.page.evaluate('sessionStorage.getItem("pbintent")'))
+        self.page.locator('#f_t').fill('登入後接著填寫的書名')
+        expect(self.page.locator('#f_t')).to_have_value('登入後接著填寫的書名')
+
+    def test_recommendation_survives_reload_and_link_callback(self):
+        self.page.locator('#addb').click()
+        self.page.reload(wait_until='networkidle')
+        self.page.goto(self.base+'?return=link#access_token=test-link&refresh_token=test-refresh&expires_in=3600', wait_until='networkidle')
+        expect(self.page.locator('#ovf')).to_be_visible()
+        self.assertNotIn('access_token', self.page.url)
+        self.assertIsNone(self.page.evaluate('sessionStorage.getItem("pbintent")'))
+
+    def test_login_in_another_tab_resumes_only_original_tab(self):
+        self.page.locator('#addb').click()
+        second = self.context.new_page()
+        second.goto(self.base+'#access_token=test-link&refresh_token=test-refresh&expires_in=3600', wait_until='networkidle')
+        expect(self.page.locator('#ovf')).to_be_visible()
+        expect(second.locator('#ovf')).not_to_be_visible()
+
+    def test_cancel_login_clears_intent_for_button_escape_and_backdrop(self):
+        for method in ['button', 'escape', 'backdrop']:
+            with self.subTest(method=method):
+                self.page.locator('#addb').click()
+                if method == 'button':
+                    self.page.locator('#ova .x').click()
+                elif method == 'escape':
+                    self.page.keyboard.press('Escape')
+                else:
+                    self.page.locator('#ova').click(position={'x': 3, 'y': 3})
+                expect(self.page.locator('#ova')).not_to_be_visible()
+                self.assertIsNone(self.page.evaluate('sessionStorage.getItem("pbintent")'))
+        self.login_with_code()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        self.assertEqual(self.favorite_writes(), [])
+
+    def test_failed_verification_preserves_intent_until_success(self):
+        self.page.locator('#addb').click()
+        self.verify_status = 403
+        self.page.locator('#ac_e').fill('parent@example.com')
+        self.page.locator('#ac_ok').click()
+        self.page.locator('#ac_code').fill('000000')
+        self.page.locator('#ac_confirm').click()
+        expect(self.page.locator('#ac_error')).to_contain_text('驗證碼錯誤')
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        self.assertIsNotNone(self.page.evaluate('sessionStorage.getItem("pbintent")'))
+        self.verify_status = 200
+        self.page.locator('#ac_code').fill('123456')
+        self.page.locator('#ac_confirm').click()
+        expect(self.page.locator('#ovf')).to_be_visible()
+
+    def test_detail_favorite_resumes_once_and_returns_to_same_book(self):
+        self.open_book_for_favorite()
+        self.finish_open_login()
+        expect(self.page.locator('#book-title')).to_have_text('情緒書（投票）')
+        expect(self.page.get_by_role('button', name='已收藏', exact=True)).to_be_visible()
+        expect(self.page.locator('#fc')).to_have_text('1')
+        self.assertEqual(self.favorites, {'emotion-vote'})
+        self.assertEqual(len(self.favorite_writes()), 1)
+        self.page.reload(wait_until='networkidle')
+        expect(self.page.locator('#fc')).to_have_text('1')
+        self.assertEqual(len(self.favorite_writes()), 1)
+
+    def test_list_heart_resumes_without_opening_details(self):
+        self.load_flow_books()
+        self.page.get_by_role('button', name='收藏：情緒書（投票）', exact=True).click()
+        self.finish_open_login()
+        expect(self.page.locator('#ov')).not_to_be_visible()
+        expect(self.page.get_by_role('button', name='取消收藏：情緒書（投票）', exact=True)).to_have_attribute('aria-pressed','true')
+        self.assertEqual(self.favorites, {'emotion-vote'})
+
+    def test_already_saved_favorite_does_not_toggle_off_or_write_again(self):
+        self.open_book_for_favorite()
+        self.favorites.add('emotion-vote')
+        self.finish_open_login()
+        expect(self.page.get_by_role('button', name='已收藏', exact=True)).to_be_visible()
+        self.assertEqual(self.favorites, {'emotion-vote'})
+        self.assertEqual(self.favorite_writes(), [])
+
+    def test_duplicate_favorite_response_counts_as_saved(self):
+        self.open_book_for_favorite()
+        self.favorites.add('emotion-vote')
+        self.stale_favorites = True
+        self.finish_open_login()
+        expect(self.page.get_by_role('button', name='已收藏', exact=True)).to_be_visible()
+        self.assertEqual(self.favorites, {'emotion-vote'})
+        self.assertEqual(len(self.favorite_writes()), 1)
+
+    def test_favorite_save_failure_keeps_details_and_allows_retry(self):
+        self.open_book_for_favorite()
+        self.favorite_status = 500
+        self.finish_open_login()
+        expect(self.page.locator('#toast')).to_contain_text('收藏未完成')
+        expect(self.page.get_by_role('button', name='加入收藏', exact=True)).to_be_visible()
+        self.assertEqual(self.favorites, set())
+        self.favorite_status = 201
+        self.page.get_by_role('button', name='加入收藏', exact=True).click()
+        expect(self.page.get_by_role('button', name='已收藏', exact=True)).to_be_visible()
+
+    def test_unavailable_book_is_not_saved_after_login(self):
+        self.open_book_for_favorite()
+        self.books = [b for b in self.books if b['id'] != 'emotion-vote']
+        self.finish_open_login()
+        expect(self.page.locator('#toast')).to_contain_text('無法公開瀏覽')
+        self.assertEqual(self.favorite_writes(), [])
+        expect(self.page.locator('#ov')).not_to_be_visible()
+
+    def test_favorite_uses_stable_book_id_when_order_changes(self):
+        self.open_book_for_favorite()
+        self.books.reverse()
+        self.finish_open_login()
+        expect(self.page.locator('#book-title')).to_have_text('情緒書（投票）')
+        self.assertEqual(self.favorites, {'emotion-vote'})
+
+    def test_expired_intent_does_not_resume(self):
+        self.page.locator('#addb').click()
+        self.page.evaluate('pendingLoginAction.createdAt=1;sessionStorage.setItem("pbintent",JSON.stringify(pendingLoginAction))')
+        self.finish_open_login()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        self.assertIsNone(self.page.evaluate('sessionStorage.getItem("pbintent")'))
+
+    def test_same_page_resume_works_when_intent_storage_is_unavailable(self):
+        self.page.evaluate('''()=>{
+          for(const method of ['getItem','setItem','removeItem']){
+            const original=Storage.prototype[method];
+            Storage.prototype[method]=function(key,...args){if(key==='pbintent')throw new Error('test storage unavailable');return original.call(this,key,...args)};
+          }
+        }''')
+        self.page.locator('#addb').click()
+        self.finish_open_login()
+        expect(self.page.locator('#ovf')).to_be_visible()
 
 
 if __name__ == '__main__':
