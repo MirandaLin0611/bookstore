@@ -19,6 +19,8 @@
 
 部署至 GitHub Pages 時，請保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置。既有資料庫不需為這次介面改版重跑 SQL。
 
+登入只需 Email，暱稱在登入後的帳號設定儲存。跨裝置驗證碼的信件模板設定及登入回歸測試，見 [Email 登入說明](docs/email-login.md)。
+
 ## 安全提醒
 
 `config.js` 只能放 Publishable key。**Secret key（sb_secret_ 開頭）絕對不要放進任何檔案或上傳到 GitHub。**

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<body style="margin:0;background:#faf8f1;color:#293f35;font-family:Arial,'Microsoft JhengHei',sans-serif;padding:28px;line-height:1.8">
+  <div style="max-width:520px;margin:auto;background:#fffefa;border:1px solid #e5e6da;border-radius:14px;padding:28px">
+    <h1 style="font-size:24px;margin:0 0 16px">登入繪本小聚場</h1>
+    <p>請在你想登入的裝置，輸入以下驗證碼：</p>
+    <p style="font-size:32px;font-weight:bold;letter-spacing:6px;background:#edf1e5;padding:14px;text-align:center;border-radius:8px">{{ .Token }}</p>
+    <p>如果你用手機收信、想在電腦使用網站，請查看上方驗證碼，再回電腦輸入。</p>
+    <p>也可以在想登入的裝置開啟下方連結：</p>
+    <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#365b45;color:#fffefa;padding:10px 18px;border-radius:8px;text-decoration:none">在這台裝置登入</a></p>
+    <p style="font-size:13px;color:#6b7166">驗證碼與登入連結請擇一使用。若已使用或失效，請回網站重新寄送登入信。第一次使用會自動建立帳號。</p>
+    <p style="font-size:13px;color:#6b7166">如果這不是你要求的登入信，忽略即可。</p>
+  </div>
+</body>
+</html>

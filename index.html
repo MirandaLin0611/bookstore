@@ -133,10 +133,36 @@
   <div class="row2"><a class="btn" id="sh_l" target="_blank" rel="noopener">LINE</a><a class="btn" id="sh_f" target="_blank" rel="noopener">Facebook</a><a class="btn" id="sh_x" target="_blank" rel="noopener">X</a><a class="btn" id="sh_th" target="_blank" rel="noopener">Threads</a><button class="btn y" id="sh_c">複製文字</button><button class="btn" id="sh_n">系統分享</button></div>
   <p class="note">可以先修改上面的文字。Instagram、小紅書、Dcard 沒有網頁分享連結，請先複製文字再貼上。</p></div></div></div>
 <div class="ov" id="ova"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">登入／註冊</h2>
-  <div id="ac_out" style="display:grid;gap:12px"><p class="mt" style="margin:0">輸入 Email，我們會寄一封登入連結給你，不需要密碼；第一次使用會自動建立帳號。瀏覽與篩選不需要登入，投稿、投票、留言、收藏與集氣需要登入。</p>
-  <label class="field" for="ac_e">Email<input type="email" id="ac_e" placeholder="you@example.com" autocomplete="email" inputmode="email" required></label><label class="field" for="ac_n">暱稱（第一次使用時設定）<input type="text" id="ac_n" maxlength="12" placeholder="其他家長會看到的名字" autocomplete="nickname"></label>
-  <button class="btn y" id="ac_ok" style="justify-self:start">寄送登入連結</button><div class="mt" id="ac_sent" role="status" aria-live="polite"></div></div>
-  <div id="ac_in" style="display:none;gap:12px"><div class="mt" id="ac_me"></div><label class="field" for="ac_nn">暱稱<input type="text" id="ac_nn" maxlength="12" autocomplete="nickname"></label><button class="btn" id="ac_sv">更新暱稱</button><button class="btn" id="ac_off" style="justify-self:start">登出</button></div>
+  <div id="ac_out" style="display:grid;gap:18px">
+    <p class="form-intro">只需 Email 就能登入，不需要密碼；第一次使用會自動建立帳號。</p>
+    <form id="ac_request" class="auth-form">
+      <label class="field" for="ac_e">Email<input type="email" id="ac_e" placeholder="you@example.com" autocomplete="email" inputmode="email" required></label>
+      <p class="note">暱稱可在登入後設定一次，之後會保留在你的帳號。</p>
+      <button class="btn y" id="ac_ok" type="submit">寄送登入信</button>
+    </form>
+    <div id="ac_wait" class="auth-form" hidden>
+      <p class="auth-recipient">登入信已寄到 <strong id="ac_target"></strong></p>
+      <p class="note" id="ac_device_help"></p>
+      <form id="ac_verify" class="auth-form" hidden>
+        <label class="field" for="ac_code">信中的數字驗證碼<input type="text" id="ac_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" minlength="6" maxlength="10" placeholder="輸入信中的驗證碼" required aria-describedby="ac_code_help"></label>
+        <p class="note" id="ac_code_help">請使用最新一封信。驗證碼與登入連結擇一使用；若已在另一台裝置點過連結，請重新寄送。</p>
+        <button class="btn y" id="ac_confirm" type="submit">驗證並登入這台裝置</button>
+      </form>
+      <div class="auth-links"><button class="text-btn" type="button" id="ac_resend">重新寄送</button><button class="text-btn" type="button" id="ac_change">改用其他 Email</button></div>
+      <p class="note">找不到信？請檢查垃圾郵件匣。</p>
+    </div>
+    <div class="mt" id="ac_sent" role="status" aria-live="polite"></div>
+    <p class="auth-error" id="ac_error" role="alert" hidden></p>
+  </div>
+  <div id="ac_in" style="display:none;gap:18px">
+    <div class="mt" id="ac_me"></div>
+    <form id="ac_profile" class="auth-form">
+      <label class="field" for="ac_nn">公開暱稱<input type="text" id="ac_nn" maxlength="12" autocomplete="nickname" required aria-describedby="ac_nick_help"></label>
+      <p class="note" id="ac_nick_help">投稿與留言會顯示這個名字，設定後下次登入會自動沿用。</p>
+      <button class="btn" id="ac_sv" type="submit">儲存暱稱</button>
+    </form>
+    <button class="btn" id="ac_off" style="justify-self:start">登出</button>
+  </div>
   <p class="note" style="margin:0">我們只會用你的 Email 寄登入連結，以及你同意的通知。</p></div></div></div>
 <div class="ov" id="ovm"><div class="box md" style="position:relative;max-width:640px"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">管理後台</h2>
   <div id="am_body"><div class="fr" style="margin-bottom:8px"><button class="btn y" data-a="pend">待審核投稿</button><button class="btn" data-a="gb">集氣管理</button><button class="btn" data-a="cm">留言檢舉</button></div><div id="am_c"></div></div></div></div></div>
@@ -207,18 +233,39 @@ $("sh_x").href="https://twitter.com/intent/tweet?text="+e(t)+"&url="+e(u);
 $("sh_th").href="https://www.threads.net/intent/post?text="+e(t+"\n"+u)}
 function openShare(t){closeAll();$("sh_t").value=t;shUpd();$("sh_n").style.display=navigator.share?"inline-block":"none";showDialog("ovs")}
 var CFG=window.APP_CONFIG||{},SB=(CFG.SUPABASE_URL||"").replace(/\/+$/,""),KEY=CFG.SUPABASE_KEY||"";
+var pendingEmail="",loginBusy=false,resendAt=0,resendTimer=null,sessionSyncPromise=null,sessionSyncAgain=false,refreshPromise=null,authVersion=0,authCallback=false;
 var S={th:{},st:{},sg:{},lang:"",tw:false,tab:"all"},B=[],loaded=false,me=null,sess=null,fav={},log={},joined={},resp={},voted={},liked={},repN={},VA={},VS={},FA={},FS={},exp={},cur=-1,rt="喜歡",ADM=false,AT="pend",$=function(i){return document.getElementById(i)};
 try{sess=JSON.parse(localStorage.getItem("pbsess")||"null")}catch(e){}
 function saveSess(){try{if(sess)localStorage.setItem("pbsess",JSON.stringify(sess));else localStorage.removeItem("pbsess")}catch(e){}}
-function ensure(){if(!sess||!sess.refresh_token||!sess.expires_at||Date.now()/1000<sess.expires_at-60)return Promise.resolve();
-return fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:sess.refresh_token})}).then(function(r){return r.json().then(function(d){if(r.ok&&d.access_token){sess={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:d.expires_at||Math.floor(Date.now()/1000)+(d.expires_in||3600),uid:sess.uid};saveSess()}else{sess=null;me=null;saveSess()}})}).catch(function(){})}
+function ensure(){
+  if(!sess||!sess.refresh_token||!sess.expires_at||Date.now()/1000<sess.expires_at-60)return Promise.resolve();
+  if(refreshPromise)return refreshPromise;
+  var original=sess,version=authVersion;
+  refreshPromise=fetch(SB+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:original.refresh_token})})
+    .then(function(r){return r.json().then(function(d){
+      if(version!==authVersion)return;
+      if(r.ok&&d.access_token&&d.refresh_token){sess={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:d.expires_at||Math.floor(Date.now()/1000)+(d.expires_in||3600),uid:original.uid};saveSess()}
+      else if(r.status===400||r.status===401||r.status===403){authVersion++;sess=null;me=null;saveSess();acctBtn()}
+    })}).catch(function(){}).finally(function(){refreshPromise=null});
+  return refreshPromise;
+}
 function api(path,o){o=o||{};return ensure().then(function(){var h={apikey:KEY,"Content-Type":"application/json"};if(sess&&sess.access_token)h.Authorization="Bearer "+sess.access_token;if(o.h)for(var k in o.h)h[k]=o.h[k];return fetch(SB+path,{method:o.m||"GET",headers:h,body:o.b===undefined?undefined:JSON.stringify(o.b)})}).then(function(r){return r.text().then(function(t){var d=null;try{d=t?JSON.parse(t):null}catch(e){}if(!r.ok){var er=new Error((d&&(d.message||d.msg||d.error_description))||("HTTP "+r.status));er.status=r.status;er.code=d&&d.code;throw er}return d})})}
 function err(e){toast("操作失敗："+((e&&e.message)||"請稍後再試"))}
 function need(m){if(me)return true;toast(m||"請先登入");openAcct();return false}
 function fromHash(){var h=location.hash.replace(/^#/,"");if(h.indexOf("access_token=")<0&&h.indexOf("error_description=")<0)return Promise.resolve();var p={};h.split("&").forEach(function(x){var kv=x.split("=");p[decodeURIComponent(kv[0])]=decodeURIComponent((kv[1]||"").replace(/\+/g," "))});try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
 if(p.error_description){toast("登入失敗："+p.error_description);return Promise.resolve()}
-sess={access_token:p.access_token,refresh_token:p.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+p.expires_in||3600)};saveSess();toast("登入成功");return Promise.resolve()}
-function whoami(){if(!sess)return Promise.resolve();return api("/auth/v1/user").then(function(u){me={id:u.id,email:u.email,nick:"匿名家長",admin:false};sess.uid=u.id;saveSess()}).catch(function(){sess=null;me=null;saveSess()})}
+authVersion++;authCallback=true;sess={access_token:p.access_token,refresh_token:p.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+p.expires_in||3600)};saveSess();return Promise.resolve()}
+function whoami(){
+  if(!sess)return Promise.resolve();
+  var version=authVersion;
+  return api("/auth/v1/user").then(function(u){
+    if(version!==authVersion||!sess)return;
+    me={id:u.id,email:u.email,nick:"匿名家長",admin:false};sess.uid=u.id;saveSess();
+  }).catch(function(){
+    if(version!==authVersion)return;
+    sess=null;me=null;saveSess();
+  });
+}
 function colorOf(id){var cs=["#8fa8a3","#c9a393","#a3b18a","#d4b483","#a79bb5","#c9a090","#9fb0c4","#b8a58f"],h=0;for(var i=0;i<id.length;i++)h=(h*31+id.charCodeAt(i))>>>0;return cs[h%cs.length]}
 function phUrl(p){return SB+"/storage/v1/object/public/book-photos/"+p}
 function mkBook(x){return {id:x.id,t:x.title,a:x.author||"",lang:x.lang,tw:!!x.is_taiwan,th:x.themes||[],st:x.styles||[],r:x.review||"",k:x.kid_reaction||"",w:x.warning||"",g:{b:x.guide_before||"",m:x.guide_during||"",a:x.guide_after||""},ph:(x.photos||[]).map(phUrl),status:x.status,mine:!!(me&&x.submitted_by===me.id),c:colorOf(x.id),n:0,vn:0,ages:{},stg:{},cm:[]}}
@@ -321,7 +368,86 @@ function openLog(i){if(!need("登入後才能記錄閱讀"))return;cur=i;var b=B
 function shareB(i){var b=B[i],l=log[b.id];openShare("《"+b.t+"》"+(b.a?"— "+b.a:"")+"\n"+b.lang+"繪本｜多數家長認為適合 "+rng(b)+"｜"+topk(b.stg,2).join("、")+"\n"+(b.r?"心得："+b.r+"\n":"")+(l?"我家孩子的反應："+l.r+(l.n?" "+l.n:"")+"\n":"")+b.th.concat(b.st).map(function(x){return "#"+x}).join(" ")+" #繪本 #親子共讀")}
 function upPhotos(){if(!PH.length)return Promise.resolve([]);return ensure().then(function(){return Promise.all(PH.map(function(d,i){var path=me.id+"/"+Date.now()+"-"+i+".jpg";return fetch(d).then(function(r){return r.blob()}).then(function(bl){return fetch(SB+"/storage/v1/object/book-photos/"+path,{method:"POST",headers:{apikey:KEY,Authorization:"Bearer "+sess.access_token,"Content-Type":"image/jpeg"},body:bl})}).then(function(r){if(!r.ok)throw new Error("照片上傳失敗");return path})}))})}
 function acctBtn(){$("acct").textContent=me?me.nick+"（已登入）":"登入／註冊";$("admb").style.display=me&&me.admin?"inline":"none"}
-function openAcct(){closeAll();$("ac_out").style.display=me?"none":"grid";$("ac_in").style.display=me?"grid":"none";if(me){$("ac_me").textContent="已登入："+me.email;$("ac_nn").value=me.nick}showDialog("ova")}
+function emailCodeEnabled(){return CFG.EMAIL_CODE_LOGIN===true}
+function accountView(){
+  $("ac_out").style.display=me?"none":"grid";
+  $("ac_in").style.display=me?"grid":"none";
+  $("ac_request").hidden=!!pendingEmail;$("ac_wait").hidden=!pendingEmail;
+  $("ac_verify").hidden=!emailCodeEnabled();
+  $("ac_target").textContent=pendingEmail;
+  $("ac_device_help").textContent=emailCodeEnabled()
+    ?"用手機收信也可以：查看信中的驗證碼，再回到這台裝置輸入。也可在這台裝置開啟信中的登入連結。"
+    :"想登入電腦，請在電腦開啟這封信中的登入連結；在手機點擊，只會登入手機。同一台裝置也請使用原本開啟網站的瀏覽器。";
+  if(me){$("ac_me").textContent="已登入："+me.email;$("ac_nn").value=me.nick}
+  updateResendButton();
+}
+function openAcct(){closeAll();accountView();showDialog("ova")}
+function updateResendButton(){
+  clearTimeout(resendTimer);
+  var seconds=Math.max(0,Math.ceil((resendAt-Date.now())/1000));
+  $("ac_resend").disabled=loginBusy||seconds>0;
+  $("ac_resend").textContent=seconds?seconds+" 秒後可重新寄送":"重新寄送";
+  if(seconds&&pendingEmail)resendTimer=setTimeout(updateResendButton,1000);
+}
+function loginError(message){$("ac_error").textContent=message;$("ac_error").hidden=!message}
+function authRequest(path,body){
+  return fetch(SB+path,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(body)})
+    .then(function(r){return r.json().then(function(data){
+      if(!r.ok){var e=new Error("authentication failed");e.status=r.status;e.code=data.code||data.error_code;throw e}
+      return data;
+    })});
+}
+function sendLoginEmail(){
+  if(loginBusy)return Promise.resolve();
+  var email=pendingEmail||$("ac_e").value.trim();
+  if(!pendingEmail&&!$("ac_e").reportValidity())return Promise.resolve();
+  if(pendingEmail&&Date.now()<resendAt)return Promise.resolve();
+  loginBusy=true;$("ac_ok").disabled=true;$("ac_change").disabled=true;$("ac_confirm").disabled=true;
+  $("ac_ok").textContent="正在寄送…";loginError("");$("ac_sent").textContent="";updateResendButton();
+  return authRequest("/auth/v1/otp?redirect_to="+encodeURIComponent(location.origin+location.pathname),{email:email,create_user:true})
+    .then(function(){pendingEmail=email;resendAt=Date.now()+60000;$("ac_code").value="";accountView();$("ac_sent").textContent="登入信已寄出，請查看信箱。";
+      if(emailCodeEnabled()&&$("ova").classList.contains("show"))$("ac_code").focus();
+    }).catch(function(e){
+      if(e.status===429){resendAt=Date.now()+60000;loginError("寄送太頻繁，請等一分鐘後再試。");}
+      else loginError("登入信暫時無法寄出，請確認 Email，稍後再試。");
+    }).finally(function(){loginBusy=false;$("ac_ok").disabled=false;$("ac_ok").textContent="寄送登入信";$("ac_change").disabled=false;$("ac_confirm").disabled=false;updateResendButton()});
+}
+function verifyEmailCode(){
+  if(loginBusy||!pendingEmail||!emailCodeEnabled())return Promise.resolve();
+  var field=$("ac_code");field.value=field.value.trim();
+  if(!field.reportValidity())return Promise.resolve();
+  loginBusy=true;$("ac_confirm").disabled=true;$("ac_confirm").textContent="正在驗證…";$("ac_change").disabled=true;loginError("");updateResendButton();
+  return authRequest("/auth/v1/verify",{email:pendingEmail,token:field.value,type:"email"})
+    .then(function(data){
+      if(!data.access_token||!data.refresh_token)throw new Error("missing session");
+      authVersion++;sess={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:data.expires_at||Math.floor(Date.now()/1000)+(data.expires_in||3600)};saveSess();
+      return whoami().then(function(){
+        if(!me)throw new Error("user unavailable");
+        pendingEmail="";field.value="";$("ac_sent").textContent="";acctBtn();return refresh();
+      }).then(function(){closeAll();toast("登入成功，這台裝置已登入。")});
+    }).catch(function(e){
+      if(e.status===429)loginError("驗證太頻繁，請稍候再試。");
+      else if(e.status===400||e.status===401||e.status===403||e.status===422)loginError("驗證碼錯誤、已使用或已過期。請檢查最新一封信，或重新寄送。");
+      else loginError("暫時無法完成登入，請稍後重試；若驗證碼已使用，請重新寄送。");
+    }).finally(function(){loginBusy=false;$("ac_confirm").disabled=false;$("ac_confirm").textContent="驗證並登入這台裝置";$("ac_change").disabled=false;updateResendButton()});
+}
+function syncBrowserSession(){
+  var stored=null;
+  try{stored=JSON.parse(localStorage.getItem("pbsess")||"null")}catch(e){return Promise.resolve()}
+  if(JSON.stringify(stored)===JSON.stringify(sess))return sessionSyncPromise||Promise.resolve();
+  authVersion++;sess=stored;me=null;acctBtn();
+  return reconcileBrowserSession();
+}
+function reconcileBrowserSession(){
+  if(sessionSyncPromise){sessionSyncAgain=true;return sessionSyncPromise}
+  sessionSyncPromise=whoami().then(function(){acctBtn();return refresh()}).then(function(){
+    if($("ova").classList.contains("show")){if(me)closeAll();else accountView()}
+  }).finally(function(){
+    sessionSyncPromise=null;
+    if(sessionSyncAgain){sessionSyncAgain=false;return reconcileBrowserSession()}
+  });
+  return sessionSyncPromise;
+}
 /* ===== 管理後台 ===== */
 function admH(){var h="";
 if(AT==="pend"){var l=B.filter(function(b){return b.status!=="published"});h=l.map(function(b){var i=B.indexOf(b);return '<div class="adr"><div class="fr"><b>'+esc(b.t)+'</b><span class="mt">'+(b.a?esc(b.a)+' · ':'')+b.lang+' · '+(b.status==="pending"?"待審核":"已下架")+'</span></div><div>'+esc(b.r)+'</div>'+galH(b,i)+(b.w?'<div class="warnb">注意：'+esc(b.w)+'</div>':'')+'<div class="row2"><button class="btn y" onclick="bkSet('+i+',\'published\')">核准公開</button><button class="btn" onclick="bkSet('+i+',\'hidden\')">下架</button><button class="btn" onclick="bkDel('+i+')">刪除</button></div></div>'}).join("")||'<div class="mt">目前沒有待處理的投稿。</div>';return h}
@@ -381,17 +507,27 @@ var btn=this;btn.disabled=true;
 upPhotos().then(function(paths){return api("/rest/v1/books",{m:"POST",h:{Prefer:"return=representation"},b:{title:v("f_t"),author:v("f_a"),lang:v("f_lang"),is_taiwan:$("f_tw").checked,themes:sp(v("f_th")),styles:sp(v("f_st")),review:v("f_r"),kid_reaction:v("f_k"),warning:v("f_w"),guide_before:v("g_b"),guide_during:v("g_m"),guide_after:v("g_a"),photos:paths,status:"pending",suggested_ages:Object.keys(FA).filter(function(k){return FA[k]}).map(Number),suggested_stages:Object.keys(FS).filter(function(k){return FS[k]})}})}).then(function(rows){var x=rows[0];return me.admin?api("/rest/v1/books?id=eq."+x.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:"published"}}):null}).then(function(){
 ["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
 btn.disabled=false;closeAll();toast(me.admin?"已公開":"已送出，審核通過後會公開");return refresh()}).catch(function(e){btn.disabled=false;err(e)})};
-$("ac_ok").onclick=function(){var input=$("ac_e"),e=input.value.trim(),n=$("ac_n").value.trim(),btn=this;if(!input.reportValidity())return;btn.disabled=true;btn.textContent="正在寄送…";$("ac_sent").textContent="";
-api("/auth/v1/otp?redirect_to="+encodeURIComponent(location.origin+location.pathname),{m:"POST",b:{email:e,create_user:true,data:{nickname:(n||"匿名家長").slice(0,12)}}}).then(function(){$("ac_sent").textContent="登入連結已寄到 "+e+"。請查看信箱，也別忘了垃圾郵件匣。";toast("已寄出登入連結")}).catch(function(e){$("ac_sent").textContent="寄送失敗："+e.message}).finally(function(){btn.disabled=false;btn.textContent="寄送登入連結"})};
-$("ac_sv").onclick=function(){var n=$("ac_nn").value.trim().slice(0,12);if(!n){toast("請輸入暱稱");return}api("/rest/v1/profiles?id=eq."+me.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{nickname:n}}).then(function(){me.nick=n;acctBtn();toast("已更新暱稱")}).catch(err)};
-$("ac_off").onclick=function(){api("/auth/v1/logout",{m:"POST",b:{}}).catch(function(){}).then(function(){sess=null;me=null;saveSess();closeAll();toast("已登出");return refresh()})};
+$("ac_request").onsubmit=function(e){e.preventDefault();sendLoginEmail()};
+$("ac_verify").onsubmit=function(e){e.preventDefault();verifyEmailCode()};
+$("ac_resend").onclick=sendLoginEmail;
+$("ac_change").onclick=function(){if(loginBusy)return;pendingEmail="";$("ac_code").value="";$("ac_sent").textContent="";loginError("");accountView();$("ac_e").focus()};
+$("ac_profile").onsubmit=function(e){
+  e.preventDefault();var n=$("ac_nn").value.trim().slice(0,12),btn=$("ac_sv");if(!me||btn.disabled)return;
+  if(!n){$("ac_nn").value="";$("ac_nn").reportValidity();return}
+  btn.disabled=true;
+  api("/rest/v1/profiles?id=eq."+me.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{nickname:n}}).then(function(){me.nick=n;acctBtn();toast("暱稱已儲存，下次登入會自動沿用。")}).catch(err).finally(function(){btn.disabled=false});
+};
+$("ac_off").onclick=function(){api("/auth/v1/logout",{m:"POST",b:{}}).catch(function(){}).then(function(){authVersion++;sess=null;me=null;pendingEmail="";saveSess();closeAll();toast("已登出");return refresh()})};
+window.addEventListener("storage",function(e){if(e.key==="pbsess"||e.key===null)syncBrowserSession()});
+window.addEventListener("focus",syncBrowserSession);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)syncBrowserSession()});
 $("admb").onclick=admOpen;
 document.querySelectorAll("#am_body [data-a]").forEach(function(x){x.onclick=function(){AT=x.dataset.a;admR()}});
 $("acct").onclick=openAcct}
 /* ===== 啟動 ===== */
 ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);build();render();
 if(!SB||!KEY){loaded=true;loadError="missing configuration";render()}
-else fromHash().then(whoami).then(refresh);
+else fromHash().then(whoami).then(function(){acctBtn();if(authCallback&&me)toast("登入成功，這台裝置已登入。");return refresh()});
 </script>
 </body>
 </html>
