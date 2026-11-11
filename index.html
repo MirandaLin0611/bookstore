@@ -132,7 +132,7 @@
 <div class="ov" id="ovs"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">分享好故事</h2><label class="field" for="sh_t">想分享的文字<textarea id="sh_t"></textarea></label>
   <div class="row2"><a class="btn" id="sh_l" target="_blank" rel="noopener">LINE</a><a class="btn" id="sh_f" target="_blank" rel="noopener">Facebook</a><a class="btn" id="sh_x" target="_blank" rel="noopener">X</a><a class="btn" id="sh_th" target="_blank" rel="noopener">Threads</a><button class="btn y" id="sh_c">複製文字</button><button class="btn" id="sh_n">系統分享</button></div>
   <p class="note">可以先修改上面的文字。Instagram、小紅書、Dcard 沒有網頁分享連結，請先複製文字再貼上。</p></div></div></div>
-<div class="ov" id="ova"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAll()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">登入／註冊</h2>
+<div class="ov" id="ova"><div class="box md" style="position:relative"><button class="btn x" onclick="closeAccount()" aria-label="關閉視窗">✕</button><div class="mb"><h2 style="margin:0">登入／註冊</h2>
   <div id="ac_out" style="display:grid;gap:18px">
     <p class="form-intro">只需 Email 就能登入，不需要密碼；第一次使用會自動建立帳號。</p>
     <form id="ac_request" class="auth-form">
@@ -173,8 +173,9 @@
 <script>
 var STG=["小班","中班","大班","數字學習","ABC學習","同儕關係","情緒管理","睡前共讀","生活習慣","親子互動"],AG=[0,1,2,3,4,5,6,7,8,9,10,11,12];
 
-var SC=[["孩子難過或生氣",{th:"情緒"}],["剛上學／新環境",{th:"新環境"}],["睡前放鬆",{th:"睡前"}],["分離焦慮",{th:"分離焦慮"}],["ABC 學習",{sg:"ABC學習"}],["數字學習",{sg:"數字學習"}],["同儕關係",{sg:"同儕關係"}]];
-var PH=[];
+var SC=[["孩子難過或生氣",{sg:"情緒管理"}],["剛上學／新環境",{th:"新環境"}],["睡前放鬆",{sg:"睡前共讀"}],["分離焦慮",{th:"分離焦慮"}],["ABC 學習",{sg:"ABC學習"}],["數字學習",{sg:"數字學習"}],["同儕關係",{sg:"同儕關係"}]];
+var STAGE_THEMES={"情緒管理":["情緒","情緒管理"],"睡前共讀":["睡前","睡前共讀"]};
+var PH=[],pendingLoginAction=null;
 var loadError="",returnFocus=null,returnBookId=null,returnFocusType=null,zoomReturnFocus=null;
 function icon(name){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-'+name+'"></use></svg>'}
 function esc(s){var d=document.createElement("div");d.textContent=s||"";return d.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
@@ -194,6 +195,7 @@ function topk(o,n){return Object.keys(o).filter(function(k){return o[k]>0}).sort
 function mx(b){var v=Object.keys(b.ages).map(function(k){return b.ages[k]});return v.length?Math.max.apply(null,v):0}
 function ar(b){var m=mx(b);if(!m)return null;var ok=Object.keys(b.ages).map(Number).filter(function(k){return b.ages[k]>=m*.4});return [Math.min.apply(null,ok),Math.max.apply(null,ok)]}
 function rng(b){var r=ar(b);return !r?"待投票":(r[0]===r[1]?r[0]+" 歲":r[0]+"–"+r[1]+" 歲")}
+function fitsStage(b,stage){return topk(b.stg,3).indexOf(stage)>=0||(STAGE_THEMES[stage]||[]).some(function(theme){return b.th.indexOf(theme)>=0})}
 function fits(b,a){var m=mx(b);return m>0&&(b.ages[a]||0)>=m*.4}
 function multi(id,items,sel,cb,lab,lim){var el=$(id),ex=exp[id];el.innerHTML="";var shown=(lim&&!ex)?items.filter(function(x,i){return i<lim||sel[x]}):items;
 shown.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(sel[x]?" on":"");b.textContent=lab?lab(x):x;b.setAttribute("aria-pressed",!!sel[x]);b.onclick=function(){sel[x]=!sel[x];multi(id,items,sel,cb,lab,lim);if(cb)cb();var next=Array.from(el.children).find(function(n){return n.textContent===(lab?lab(x):String(x))});if(next)next.focus({preventScroll:true})};el.appendChild(b)});
@@ -209,9 +211,10 @@ if(id!=="ovz")document.querySelectorAll(".ov.show").forEach(function(d){if(d!==e
 el.classList.add("show");el.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");document.querySelectorAll("[data-page]").forEach(function(n){n.inert=true});
 if(id==="ovz"&&$("ov").classList.contains("show")){$("ov").inert=true;$("ov").setAttribute("aria-hidden","true")}
 if(!same||!el.contains(document.activeElement)){var target=el.querySelector("h2")||el.querySelector("button");if(target){if(target.tagName!=="BUTTON")target.setAttribute("tabindex","-1");target.focus({preventScroll:true})}}}
-function closeTopDialog(){if($("ovz").classList.contains("show")&&$("ov").classList.contains("show")){$("ovz").classList.remove("show");$("ovz").setAttribute("aria-hidden","true");$("ov").inert=false;$("ov").setAttribute("aria-hidden","false");if(zoomReturnFocus&&zoomReturnFocus.isConnected)zoomReturnFocus.focus({preventScroll:true});return}closeAll()}
+function closeAccount(){clearLoginAction();closeAll()}
+function closeTopDialog(){if($("ova").classList.contains("show"))clearLoginAction();if($("ovz").classList.contains("show")&&$("ov").classList.contains("show")){$("ovz").classList.remove("show");$("ovz").setAttribute("aria-hidden","true");$("ov").inert=false;$("ov").setAttribute("aria-hidden","false");if(zoomReturnFocus&&zoomReturnFocus.isConnected)zoomReturnFocus.focus({preventScroll:true});return}closeAll()}
 function rateUI(){document.querySelectorAll(".rt").forEach(function(x){var on=x.textContent===rt;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})}
-function startRecommendation(){if(!need("登入後，就能分享你的共讀經驗"))return;closeAll();showDialog("ovf")}
+function startRecommendation(){if(!need("登入後，就能分享你的共讀經驗",{kind:"recommend"}))return;closeAll();showDialog("ovf")}
 function selectShelf(tab){S.tab=tab;document.querySelectorAll(".tab").forEach(function(t){var on=t.dataset.t===tab;t.classList.toggle("on",on);t.setAttribute("aria-pressed",on)});render()}
 function clearFilters(){S.th={};S.st={};S.sg={};S.lang="";S.tw=false;$("q").value="";$("age").value=-1;$("sort").value="";$("nowarn").checked=false;$("onlygb").checked=false;ageText();build();render()}
 function syncFilters(){var tokens=[],add=function(label,clear){tokens.push({label:label,clear:clear})};
@@ -251,7 +254,50 @@ function ensure(){
 }
 function api(path,o){o=o||{};return ensure().then(function(){var h={apikey:KEY,"Content-Type":"application/json"};if(sess&&sess.access_token)h.Authorization="Bearer "+sess.access_token;if(o.h)for(var k in o.h)h[k]=o.h[k];return fetch(SB+path,{method:o.m||"GET",headers:h,body:o.b===undefined?undefined:JSON.stringify(o.b)})}).then(function(r){return r.text().then(function(t){var d=null;try{d=t?JSON.parse(t):null}catch(e){}if(!r.ok){var er=new Error((d&&(d.message||d.msg||d.error_description))||("HTTP "+r.status));er.status=r.status;er.code=d&&d.code;throw er}return d})})}
 function err(e){toast("操作失敗："+((e&&e.message)||"請稍後再試"))}
-function need(m){if(me)return true;toast(m||"請先登入");openAcct();return false}
+function need(m,action){if(me)return true;rememberLoginAction(action);toast(m||"請先登入");openAcct();return false}
+function rememberLoginAction(action){
+  pendingLoginAction=action?{kind:action.kind,bookId:action.bookId||null,detail:!!action.detail,scroll:action.scroll||0,createdAt:Date.now()}:null;
+  try{if(pendingLoginAction)sessionStorage.setItem("pbintent",JSON.stringify(pendingLoginAction));else sessionStorage.removeItem("pbintent")}catch(e){}
+}
+function clearLoginAction(){rememberLoginAction(null)}
+function getLoginAction(){
+  var action=pendingLoginAction;
+  if(!action){try{action=JSON.parse(sessionStorage.getItem("pbintent")||"null")}catch(e){}}
+  if(!action)return null;
+  var valid=(action.kind==="recommend"||action.kind==="favorite")&&typeof action.createdAt==="number"&&Date.now()-action.createdAt>=0&&Date.now()-action.createdAt<3600000;
+  if(action.kind==="favorite")valid=valid&&typeof action.bookId==="string"&&action.bookId.length>0&&action.bookId.length<=200;
+  if(!valid){clearLoginAction();return null}
+  return action;
+}
+function resumeLoginAction(){
+  if(!me)return Promise.resolve(false);
+  var action=getLoginAction();
+  if(!action)return Promise.resolve(false);
+  clearLoginAction();
+  if(action.kind==="recommend"){showDialog("ovf");return Promise.resolve(true)}
+  if(loadError){toast("已登入，但書單暫時無法載入；請重新載入後再收藏。");return Promise.resolve(true)}
+  var index=B.findIndex(function(b){return b.id===action.bookId&&b.status==="published"});
+  if(index<0){toast("這本書目前無法公開瀏覽，請重新選擇。");return Promise.resolve(true)}
+  var owner=me.id,alreadySaved=!!fav[action.bookId];
+  var save=alreadySaved?Promise.resolve():api("/rest/v1/favorites",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:action.bookId}}).catch(function(e){if(e.code!=="23505")throw e});
+  function restoreBook(){
+    var current=B.findIndex(function(b){return b.id===action.bookId&&b.status==="published"});
+    if(action.detail&&current>=0){openB(current);$("md").scrollTop=Math.max(0,Math.min(100000,Number(action.scroll)||0))}
+    else{var button=document.querySelector('.heart[data-book-id="'+CSS.escape(action.bookId)+'"]');if(button){button.focus({preventScroll:true});button.scrollIntoView({block:"nearest"})}}
+  }
+  return save.then(function(){
+    if(!me||me.id!==owner)return true;
+    fav[action.bookId]=1;render();restoreBook();toast(alreadySaved?"這本書已在你的收藏清單。":"已加入收藏。");return true;
+  }).catch(function(){
+    if(me&&me.id===owner){restoreBook();toast("已登入，但收藏未完成，請再按一次「加入收藏」。")}
+    return true;
+  });
+}
+function completeLogin(announce){
+  if(!me)return Promise.resolve();
+  if($("ova").classList.contains("show"))closeAll();
+  return resumeLoginAction().then(function(resumed){if(!resumed&&announce)toast("登入成功，這台裝置已登入。")});
+}
 function fromHash(){var h=location.hash.replace(/^#/,"");if(h.indexOf("access_token=")<0&&h.indexOf("error_description=")<0)return Promise.resolve();var p={};h.split("&").forEach(function(x){var kv=x.split("=");p[decodeURIComponent(kv[0])]=decodeURIComponent((kv[1]||"").replace(/\+/g," "))});try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
 if(p.error_description){toast("登入失敗："+p.error_description);return Promise.resolve()}
 authVersion++;authCallback=true;sess={access_token:p.access_token,refresh_token:p.refresh_token,expires_at:Math.floor(Date.now()/1000)+(+p.expires_in||3600)};saveSess();return Promise.resolve()}
@@ -310,8 +356,7 @@ if(a>=0&&!fits(b,a))return false;
 if(nw&&b.w)return false;
 if(S.tw&&!b.tw)return false;
 if($("onlygb").checked&&!b.gb)return false;
-var tg=topk(b.stg,3);
-return th.every(function(x){return b.th.indexOf(x)>=0})&&st.every(function(x){return b.st.indexOf(x)>=0})&&sg.every(function(x){return tg.indexOf(x)>=0})});
+return th.every(function(x){return b.th.indexOf(x)>=0})&&st.every(function(x){return b.st.indexOf(x)>=0})&&sg.every(function(x){return fitsStage(b,x)})});
 var s=$("sort").value;
 if(s==="like")o.sort(function(x,y){return y.n-x.n});
 if(s==="vote")o.sort(function(x,y){return y.vn-x.vn});
@@ -332,7 +377,7 @@ if(filtered){$("list").innerHTML=emptyState("還沒找到剛剛好的那本","�
 if(S.tab==="fav"||S.tab==="log"){$("list").innerHTML=emptyState(S.tab==="fav"?"第一本收藏，會是哪一本呢？":"一起讀的故事，從這裡開始記","到探索繪本看看，將喜歡的書加入收藏，也可以記下閱讀心得。","selectShelf('all')","去探索繪本","heart");return}
 $("list").innerHTML=emptyState("第一個好故事，等你來分享。","這座小小書架剛剛開始。推薦一本你和孩子讀過、想再讀一次的繪本吧。","startRecommendation()","分享第一本繪本","sprout")
 }
-function tf(i){var b=B[i];if(!need("登入後才能加入收藏"))return;var on=!fav[b.id];(on?api("/rest/v1/favorites",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id}}):api("/rest/v1/favorites?book_id=eq."+b.id+"&user_id=eq."+me.id,{m:"DELETE"})).then(function(){fav[b.id]=on;toast(on?"已加入收藏":"已移出收藏");render();if($("ov").classList.contains("show"))openB(i,1)}).catch(err)}
+function tf(i){var b=B[i];if(!need("登入後才能加入收藏",{kind:"favorite",bookId:b.id,detail:$("ov").classList.contains("show"),scroll:$("md").scrollTop}))return;var on=!fav[b.id];(on?api("/rest/v1/favorites",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id}}):api("/rest/v1/favorites?book_id=eq."+b.id+"&user_id=eq."+me.id,{m:"DELETE"})).then(function(){fav[b.id]=on;toast(on?"已加入收藏":"已移出收藏");render();if($("ov").classList.contains("show"))openB(i,1)}).catch(err)}
 function gbH(b,i){var g=b.gb;if(!g)return"";var p=Math.min(100,Math.round(g.n/g.t*100)),st;
 if(g.status!=="collecting")st='<div class="mt">'+(g.status==="open"?"主辦人已開團。":"這團已截止。")+(joined[b.id]?'請到「通知」分頁查看開團資訊。':'集氣的家長已收到通知。')+'</div>';
 else if(g.n>=g.t)st='<div class="mt">已達標，等待主辦人確認開團。'+(joined[b.id]?'你已集氣，開團後會通知你。':'')+'</div>'+(joined[b.id]?'<button class="btn" style="justify-self:start" onclick="jn('+i+')">取消集氣</button>':'');
@@ -424,7 +469,7 @@ function verifyEmailCode(){
       return whoami().then(function(){
         if(!me)throw new Error("user unavailable");
         pendingEmail="";field.value="";$("ac_sent").textContent="";acctBtn();return refresh();
-      }).then(function(){closeAll();toast("登入成功，這台裝置已登入。")});
+      }).then(function(){return completeLogin(true)});
     }).catch(function(e){
       if(e.status===429)loginError("驗證太頻繁，請稍候再試。");
       else if(e.status===400||e.status===401||e.status===403||e.status===422)loginError("驗證碼錯誤、已使用或已過期。請檢查最新一封信，或重新寄送。");
@@ -441,7 +486,8 @@ function syncBrowserSession(){
 function reconcileBrowserSession(){
   if(sessionSyncPromise){sessionSyncAgain=true;return sessionSyncPromise}
   sessionSyncPromise=whoami().then(function(){acctBtn();return refresh()}).then(function(){
-    if($("ova").classList.contains("show")){if(me)closeAll();else accountView()}
+    if(me)return completeLogin($("ova").classList.contains("show"));
+    if($("ova").classList.contains("show"))accountView()
   }).finally(function(){
     sessionSyncPromise=null;
     if(sessionSyncAgain){sessionSyncAgain=false;return reconcileBrowserSession()}
@@ -480,7 +526,7 @@ var labels={ov:"繪本推薦詳情",ovf:"分享繪本",ovl:"記錄閱讀",ovs:"�
 Object.keys(labels).forEach(function(id){var el=$(id);el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-label",labels[id]);el.setAttribute("aria-hidden","true");el.addEventListener("click",function(e){if(e.target===this)closeTopDialog()})});
 document.addEventListener("keydown",function(e){var active=$("ovz").classList.contains("show")?$("ovz"):document.querySelector(".ov.show");if(!active)return;if(e.key==="Escape"){e.preventDefault();closeTopDialog();return}if(e.key!=="Tab")return;var stops=Array.from(active.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex="0"]')).filter(function(n){return !n.disabled&&n.tabIndex>=0&&n.getClientRects().length});if(!stops.length){e.preventDefault();return}var first=stops[0],last=stops[stops.length-1];if(e.shiftKey&&(document.activeElement===first||!stops.includes(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!active.contains(document.activeElement))){e.preventDefault();first.focus()}});
 var scenarioIcons=["heart","school","moon","sprout","abc","numbers","friends"],scenarioColors=["#f3e6de","#edf0df","#eaeaf2","#f4ecd8","#e5ede7","#f2e8d9","#f0e5e7"],scenarioInks=["#ab735b","#7b8d54","#8882a5","#ad8d4b","#638970","#ac8756","#a27682"];
-SC.forEach(function(spec,i){var b=document.createElement("button");b.type="button";b.className="scenario";b.style.setProperty("--scenario-bg",scenarioColors[i]);b.style.setProperty("--scenario-ink",scenarioInks[i]);b.innerHTML=icon(scenarioIcons[i])+"<span>"+esc(spec[0])+"</span>";b.setAttribute("aria-pressed","false");b.onclick=function(){var on=this.getAttribute("aria-pressed")==="true";S.th={};S.sg={};if(!on){if(spec[1].th)S.th[spec[1].th]=true;if(spec[1].sg)S.sg[spec[1].sg]=true}selectShelf("all");build();render();$("discover").scrollIntoView({block:"start"})};$("scen").appendChild(b)});
+SC.forEach(function(spec,i){var b=document.createElement("button");b.type="button";b.className="scenario";b.setAttribute("aria-label",spec[0]);b.style.setProperty("--scenario-bg",scenarioColors[i]);b.style.setProperty("--scenario-ink",scenarioInks[i]);b.innerHTML=icon(scenarioIcons[i])+"<span>"+esc(spec[0])+"</span>";b.setAttribute("aria-pressed","false");b.onclick=function(){var on=this.getAttribute("aria-pressed")==="true";S.th={};S.sg={};if(!on){if(spec[1].th)S.th[spec[1].th]=true;if(spec[1].sg)S.sg[spec[1].sg]=true}selectShelf("all");build();render();$("discover").scrollIntoView({block:"start"})};$("scen").appendChild(b)});
 $("age").oninput=function(){ageText();render()};
 ["q","sort","nowarn","onlygb"].forEach(function(i){$(i).addEventListener("input",render)});
 $("q").addEventListener("keydown",function(e){if(e.key==="Enter"){this.blur();$("list").scrollIntoView({block:"start"})}});
@@ -517,7 +563,7 @@ $("ac_profile").onsubmit=function(e){
   btn.disabled=true;
   api("/rest/v1/profiles?id=eq."+me.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{nickname:n}}).then(function(){me.nick=n;acctBtn();toast("暱稱已儲存，下次登入會自動沿用。")}).catch(err).finally(function(){btn.disabled=false});
 };
-$("ac_off").onclick=function(){api("/auth/v1/logout",{m:"POST",b:{}}).catch(function(){}).then(function(){authVersion++;sess=null;me=null;pendingEmail="";saveSess();closeAll();toast("已登出");return refresh()})};
+$("ac_off").onclick=function(){clearLoginAction();api("/auth/v1/logout",{m:"POST",b:{}}).catch(function(){}).then(function(){authVersion++;sess=null;me=null;pendingEmail="";saveSess();closeAll();toast("已登出");return refresh()})};
 window.addEventListener("storage",function(e){if(e.key==="pbsess"||e.key===null)syncBrowserSession()});
 window.addEventListener("focus",syncBrowserSession);
 document.addEventListener("visibilitychange",function(){if(!document.hidden)syncBrowserSession()});
@@ -527,7 +573,7 @@ $("acct").onclick=openAcct}
 /* ===== 啟動 ===== */
 ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);build();render();
 if(!SB||!KEY){loaded=true;loadError="missing configuration";render()}
-else fromHash().then(whoami).then(function(){acctBtn();if(authCallback&&me)toast("登入成功，這台裝置已登入。");return refresh()});
+else fromHash().then(whoami).then(function(){acctBtn();return refresh()}).then(function(){if(me)return completeLogin(authCallback)});
 </script>
 </body>
 </html>
