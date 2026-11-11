@@ -28,6 +28,10 @@ select id from auth.users where email = 'you@example.com';
 
 沒做這一步，家長點信箱裡的登入連結時會被導到錯誤的位置。
 
+### 在電腦輸入 Email 驗證碼
+
+若要用手機收信、在電腦完成登入，需先讓 Supabase 信件模板顯示驗證碼，再開啟網站端的驗證碼入口。完整設定見 [Email 登入說明](docs/email-login.md)。未完成模板設定時，請保留 `config.js` 的 `EMAIL_CODE_LOGIN: false`。
+
 ## 四、驗證
 
 1. 開網站 → 登入／註冊 → 輸入 Email → 到信箱點連結。

@@ -213,9 +213,17 @@ textarea{width:100%;min-height:110px;resize:vertical;line-height:1.8}
 .toast.show{transform:translate(-50%,0)}
 .toast{visibility:hidden}
 .toast.show{visibility:visible}
-#ac_sent{padding:12px;background:var(--acc2);border-radius:8px}
+#ac_sent{padding:12px;background:var(--acc2);color:var(--acc);border-radius:8px}
 #ac_sent:empty{display:none}
 #ac_out,#ac_in{gap:18px!important}
+.auth-form{display:grid;gap:16px;margin:0;min-width:0}
+.auth-recipient{font-size:14px;margin:0;overflow-wrap:anywhere}
+.auth-recipient strong{font-weight:600}
+.auth-links{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.auth-error{padding:12px 14px;border:1px solid #e5c5ba;background:#fff1e9;color:#8f3e2f;font-size:13px;border-radius:8px;margin:0}
+#ac_code{font-size:22px;letter-spacing:.2em;font-variant-numeric:tabular-nums}
+#ac_code::placeholder{font-size:14px;letter-spacing:normal}
+#ac_verify{padding:18px;border:1px solid #dce4ce;border-radius:10px;background:#f5f7ed}
 .reading-stats{padding:15px 18px;margin:0 0 18px;font-size:13px;color:var(--mute)}
 @keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @keyframes breathe{50%{opacity:.45}}
