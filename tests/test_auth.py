@@ -59,7 +59,7 @@ class EmailLoginTests(unittest.TestCase):
 
     def new_context(self):
         context = self.browser.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
-        context.route('**/config.js', lambda route: route.fulfill(
+        context.route('**/config.js*', lambda route: route.fulfill(
             content_type='application/javascript', body='window.APP_CONFIG = ' + json.dumps({
                 'SUPABASE_URL': 'https://auth-tests.supabase.co',
                 'SUPABASE_KEY': 'test-public-key',
