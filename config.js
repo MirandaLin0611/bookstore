@@ -3,7 +3,7 @@
 // 注意：絕對不要把 Secret key（sb_secret_ 開頭）放在這裡。
 window.APP_CONFIG = {
   // Supabase 的 Magic Link 與 Confirm signup 信件模板都加入 {{ .Token }} 後，才改為 true。
-  EMAIL_CODE_LOGIN: false,
+  EMAIL_CODE_LOGIN: true,
   SUPABASE_URL: "https://zqxgkzjotgjxvnarnrvf.supabase.co",
   SUPABASE_KEY: "sb_publishable_Yys_iAqYgBIVzxNNxae6AA_sX4JMgKY"
 };
