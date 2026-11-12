@@ -21,6 +21,8 @@
 
 登入只需 Email，暱稱在登入後的帳號設定儲存。跨裝置驗證碼的信件模板設定及登入回歸測試，見 [Email 登入說明](docs/email-login.md)。
 
+生活情境共六組、32 種，篩選與投稿共用相同選項。分類參考、別名對照及資料處理方式，見 [生活情境分類](docs/situation-filters.md)。
+
 ## 安全提醒
 
 `config.js` 只能放 Publishable key。**Secret key（sb_secret_ 開頭）絕對不要放進任何檔案或上傳到 GitHub。**
