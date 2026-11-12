@@ -52,6 +52,7 @@
       <span class="small-label">選一個情境開始 ↓</span>
     </div>
     <div class="scen" id="scen" role="group" aria-label="依生活情境找書"></div>
+    <div class="scenario-more"><p class="note">從道歉、感謝到手足相處，陪孩子一起練習生活。</p><button class="text-btn" id="more-situations" aria-controls="fbody">看全部生活情境 <span aria-hidden="true">↗</span></button></div>
   </section>
   <section class="browse" id="discover" aria-labelledby="browse-title">
     <div class="section-heading">
@@ -77,8 +78,9 @@
       <div class="quick-filters"><span class="lab" id="language-label">語言</span><div id="langs" class="fr" role="group" aria-labelledby="language-label"></div><button type="button" class="chip" id="twb" aria-pressed="false">台灣作家</button></div>
       <div class="fbody" id="fbody">
         <div class="fr filter-row"><label class="lab" for="age">年齡</label><div class="filter-options"><div class="range-row"><input type="range" id="age" min="-1" max="12" value="-1" aria-describedby="age-help"><b id="agev">不限年齡</b></div><p class="note" id="age-help">依家長投票篩選；尚未有年齡建議的書不會出現在指定年齡中。</p></div></div>
+        <section class="situation-filter" aria-labelledby="situation-label"><h3 id="situation-label">生活情境</h3><p class="note" id="situation-help">可複選，書籍需符合所有已選情境。數字為該情境的公開繪本總數；年齡、語言等條件會再縮小結果。</p><div class="situation-groups" id="situations"></div></section>
         <div class="fr filter-row"><span class="lab" id="stage-label">階段</span><div id="stages" class="fr filter-options" role="group" aria-labelledby="stage-label"></div></div>
-        <div class="fr filter-row" id="theme-row"><span class="lab" id="theme-label">主題</span><div id="themes" class="fr filter-options" role="group" aria-labelledby="theme-label"></div></div>
+        <div class="fr filter-row" id="theme-row"><span class="lab" id="theme-label">其他主題</span><div id="themes" class="fr filter-options" role="group" aria-labelledby="theme-label"></div></div>
         <div class="fr filter-row" id="style-row"><span class="lab" id="style-label">風格</span><div id="styles" class="fr filter-options" role="group" aria-labelledby="style-label"></div></div>
         <div class="fr filter-end"><div><label class="check"><input type="checkbox" id="nowarn">只看未標註注意事項的書</label><label class="check" id="group-filter" hidden><input type="checkbox" id="onlygb">只看開放集氣的書</label></div><button class="text-btn" id="reset">清除所有條件</button></div>
       </div>
@@ -105,10 +107,11 @@
   <label class="field" for="f_r">為什麼想推薦？（選填）<textarea id="f_r" placeholder="例如：故事很貼近剛上學的心情，我們讀完聊了好久。"></textarea></label>
   <label class="field" for="f_k">孩子的反應（選填）<input type="text" id="f_k" placeholder="例如：3 歲半，每晚都指定讀，還會幫主角說話。"></label>
   <fieldset><legend>你覺得適合幾歲？（選填，可複選）</legend><div class="fr" id="fa"></div></fieldset>
-  <fieldset><legend>適合哪個階段或情境？（選填，可複選）</legend><div class="fr" id="fs"></div></fieldset>
-  <details class="optional-fields"><summary>補充照片、主題與陪讀建議（選填）</summary><div class="optional-body">
+  <fieldset class="situation-field"><legend>這本書可以陪孩子聊什麼？（選填，可複選）</legend><p class="note" id="form-situation-help">選擇故事真正談到的情境，讓其他家庭更容易找到；不用每組都選。</p><div class="situation-groups" id="form-situations"></div></fieldset>
+  <label class="field" for="f_th">其他主題（選填）<input type="text" id="f_th" placeholder="上面沒有的主題，例如：恐龍、交通工具" aria-describedby="custom-theme-help"><small id="custom-theme-help">多個主題請用逗號或頓號分隔。</small></label>
+  <details class="optional-fields"><summary>補充照片、學習階段與陪讀建議（選填）</summary><div class="optional-body">
+    <fieldset><legend>補充階段建議（選填，可複選）</legend><div class="fr" id="fs"></div></fieldset>
     <label class="check"><input type="checkbox" id="f_tw">這是台灣作者或繪者的作品</label>
-    <label class="field" for="f_th">主題<input type="text" id="f_th" placeholder="例如：友誼、情緒（用逗號或頓號分隔）"></label>
     <label class="field" for="f_st">畫風或特色<input type="text" id="f_st" placeholder="例如：水彩、溫柔（用逗號或頓號分隔）"></label>
     <div class="field"><span>繪本照片</span><small>最多 4 張，第一張作為書封；只上傳封面或少量代表內頁。</small><input type="file" id="f_ph" aria-label="上傳繪本照片，最多四張" accept="image/*" multiple><div class="fr" id="f_pv"></div></div>
     <div class="warnb">請勿上傳孩子、制服或校名等可辨識資訊，也請不要拍攝整本書。</div>
@@ -173,9 +176,56 @@
 <script>
 var STG=["小班","中班","大班","數字學習","ABC學習","同儕關係","情緒管理","睡前共讀","生活習慣","親子互動"],AG=[0,1,2,3,4,5,6,7,8,9,10,11,12];
 
-var SC=[["孩子難過或生氣",{sg:"情緒管理"}],["剛上學／新環境",{th:"新環境"}],["睡前放鬆",{sg:"睡前共讀"}],["分離焦慮",{th:"分離焦慮"}],["ABC 學習",{sg:"ABC學習"}],["數字學習",{sg:"數字學習"}],["同儕關係",{sg:"同儕關係"}]];
-var STAGE_THEMES={"情緒管理":["情緒","情緒管理"],"睡前共讀":["睡前","睡前共讀"]};
-var PH=[],pendingLoginAction=null;
+/* 情境存於既有 themes；stage 只使用資料庫已允許的階段。別名只比對標籤，不推測心得內容。 */
+var LIFE_GROUPS=[
+  {name:"友善與品格",items:[
+    {key:"學說對不起",aliases:["道歉","對不起","學會道歉","學習道歉"]},
+    {key:"有禮貌",aliases:["禮貌","禮儀","禮貌用語"]},
+    {key:"感恩與感激",aliases:["感恩","感激","感謝","謝謝","學會感恩"]},
+    {key:"同理與尊重",aliases:["同理心","同理","尊重","尊重他人"]},
+    {key:"誠實與負責",aliases:["誠實","負責","責任感","承擔責任"]},
+    {key:"分享與輪流",aliases:["分享","輪流","學會分享"]}
+  ]},
+  {name:"人際與家庭",items:[
+    {key:"手足相處",aliases:["手足","手足關係","手足之情","兄弟姊妹","兄弟姐妹"]},
+    {key:"家有新寶寶",aliases:["新寶寶","迎接新生兒","當哥哥姊姊"]},
+    {key:"同儕關係",label:"交朋友／同儕關係",aliases:["友誼","友情","交朋友","人際關係"],stage:"同儕關係"},
+    {key:"衝突與和好",aliases:["和好","吵架","衝突","解決衝突"]},
+    {key:"親子互動",label:"親子陪伴",aliases:["親子陪伴","親子關係","親情"],stage:"親子互動"}
+  ]},
+  {name:"情緒與自我",items:[
+    {key:"情緒管理",label:"孩子難過或生氣",aliases:["情緒","生氣","難過","情緒調節"],stage:"情緒管理"},
+    {key:"分離焦慮",aliases:["分離","分離不安"]},
+    {key:"害怕與勇氣",aliases:["害怕","恐懼","勇氣","勇敢","怕黑"]},
+    {key:"挫折與耐心",aliases:["挫折","耐心","等待","不放棄"]},
+    {key:"自信與接納",aliases:["自信","自我接納","自我認同","接納自己"]}
+  ]},
+  {name:"生活與習慣",items:[
+    {key:"睡前共讀",label:"睡前放鬆",aliases:["睡前","睡覺","睡眠"],stage:"睡前共讀"},
+    {key:"刷牙與洗澡",aliases:["刷牙","洗澡","清潔習慣"]},
+    {key:"如廁與戒尿布",aliases:["如廁","上廁所","戒尿布","便便"]},
+    {key:"吃飯與挑食",aliases:["吃飯","挑食","飲食習慣"]},
+    {key:"收拾與整理",aliases:["收拾","整理","收玩具"]},
+    {key:"身體界線與保護",aliases:["身體界線","身體自主權","自我保護"]}
+  ]},
+  {name:"入園與成長",items:[
+    {key:"新環境",label:"剛上學／新環境",aliases:["入園","上學","入學適應","新學校"]},
+    {key:"生活自理",aliases:["自理","自己穿衣","獨立自主"]},
+    {key:"看醫生",aliases:["看病","醫院","看牙醫","打針"]},
+    {key:"生命與離別",aliases:["生命教育","離別","死亡","失落"]},
+    {key:"多元與包容",aliases:["多元","包容","文化差異","尊重差異"]}
+  ]},
+  {name:"好奇與探索",items:[
+    {key:"ABC學習",label:"ABC 學習",aliases:["ABC","英文字母","字母學習"],stage:"ABC學習"},
+    {key:"數字學習",aliases:["數字","數數","數學啟蒙"],stage:"數字學習"},
+    {key:"自然與動物",aliases:["自然","動物","植物","大自然"]},
+    {key:"科學與探索",aliases:["科學","科普","探索"]},
+    {key:"想像與創作",aliases:["想像","想像力","創作","創造力"]}
+  ]}
+];
+var LIFE={},LIFE_ALIASES=Object.create(null);LIFE_GROUPS.forEach(function(group){group.items.forEach(function(item){item.label=item.label||item.key;item.aliases=item.aliases||[];LIFE[item.key]=item;[item.key,item.label].concat(item.aliases).forEach(function(alias){LIFE_ALIASES[alias.toLowerCase()]=item.key})})});
+var SC=["情緒管理","學說對不起","有禮貌","手足相處","感恩與感激","新環境","睡前共讀"].map(function(key){var item=LIFE[key];return [item.label,item.stage?{sg:item.stage}:{th:key}]});
+var PH=[],FT={},pendingLoginAction=null;
 var loadError="",returnFocus=null,returnBookId=null,returnFocusType=null,zoomReturnFocus=null;
 function icon(name){return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-'+name+'"></use></svg>'}
 function esc(s){var d=document.createElement("div");d.textContent=s||"";return d.innerHTML.replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
@@ -195,15 +245,27 @@ function topk(o,n){return Object.keys(o).filter(function(k){return o[k]>0}).sort
 function mx(b){var v=Object.keys(b.ages).map(function(k){return b.ages[k]});return v.length?Math.max.apply(null,v):0}
 function ar(b){var m=mx(b);if(!m)return null;var ok=Object.keys(b.ages).map(Number).filter(function(k){return b.ages[k]>=m*.4});return [Math.min.apply(null,ok),Math.max.apply(null,ok)]}
 function rng(b){var r=ar(b);return !r?"待投票":(r[0]===r[1]?r[0]+" 歲":r[0]+"–"+r[1]+" 歲")}
-function fitsStage(b,stage){return topk(b.stg,3).indexOf(stage)>=0||(STAGE_THEMES[stage]||[]).some(function(theme){return b.th.indexOf(theme)>=0})}
+function lifeKey(value){return LIFE_ALIASES[value.trim().toLowerCase()]||value.trim()}
+function fitsTheme(b,theme){var key=lifeKey(theme),item=LIFE[key];return b.th.some(function(value){return lifeKey(value)===key})||!!(item&&item.stage&&topk(b.stg,3).indexOf(item.stage)>=0)}
+function fitsStage(b,stage){return topk(b.stg,3).indexOf(stage)>=0||fitsTheme(b,stage)}
+function lifeSelected(item){return !!(item.stage?S.sg[item.stage]:S.th[item.key])}
+function lifePicker(id,posting){var root=$(id);LIFE_GROUPS.forEach(function(group,i){var detail=document.createElement("details"),summary=document.createElement("summary"),title=document.createElement("span"),selected=document.createElement("span"),options=document.createElement("div");detail.className="situation-group";detail.open=i===0;title.textContent=group.name;selected.className="situation-selection";selected.hidden=true;summary.append(title,selected);options.className="fr situation-options";options.setAttribute("role","group");options.setAttribute("aria-label",(posting?"投稿情境：":"篩選情境：")+group.name);
+group.items.forEach(function(item,j){var button=document.createElement("button");button.type="button";button.className="chip situation-chip";button.dataset.life=item.key;button.setAttribute("aria-label",item.label);button.setAttribute("aria-pressed","false");var label=document.createElement("span");label.textContent=item.label;button.appendChild(label);
+if(!posting){var count=document.createElement("span");count.className="situation-count";count.id=id+"-count-"+i+"-"+j;button.setAttribute("aria-describedby",count.id);button.appendChild(count)}
+button.onclick=function(){if(posting){FT[item.key]=!FT[item.key];syncLifePickers()}else{var state=item.stage?S.sg:S.th,key=item.stage||item.key;state[key]=!state[key];build();render()}};options.appendChild(button)});
+detail.append(summary,options);root.appendChild(detail)})}
+function syncLifePickers(){["situations","form-situations"].forEach(function(id){var posting=id==="form-situations";$(id).querySelectorAll(".situation-group").forEach(function(group){var n=0;group.querySelectorAll("[data-life]").forEach(function(button){var item=LIFE[button.dataset.life],on=posting?!!FT[item.key]:lifeSelected(item);button.classList.toggle("on",on);button.setAttribute("aria-pressed",on);if(on)n++;
+if(!posting){var count=B.filter(function(book){return book.status==="published"&&fitsTheme(book,item.key)}).length;button.querySelector(".situation-count").innerHTML=count+'<span class="sr-only"> 本公開繪本</span>';button.classList.toggle("no-books",count===0)}});var selected=group.querySelector(".situation-selection");selected.textContent="已選 "+n;selected.hidden=!n})})}
+function recommendationThemes(){var values=Object.keys(FT).filter(function(key){return FT[key]}).concat($("f_th").value.split(/[,，、]/));return values.map(lifeKey).filter(function(value,i,all){return value&&all.indexOf(value)===i})}
+function recommendationStages(){var stages=Object.keys(FS).filter(function(key){return FS[key]});Object.keys(FT).forEach(function(key){if(FT[key]&&LIFE[key].stage)stages.push(LIFE[key].stage)});return stages.filter(function(stage,i){return STG.indexOf(stage)>=0&&stages.indexOf(stage)===i})}
 function fits(b,a){var m=mx(b);return m>0&&(b.ages[a]||0)>=m*.4}
 function multi(id,items,sel,cb,lab,lim){var el=$(id),ex=exp[id];el.innerHTML="";var shown=(lim&&!ex)?items.filter(function(x,i){return i<lim||sel[x]}):items;
 shown.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(sel[x]?" on":"");b.textContent=lab?lab(x):x;b.setAttribute("aria-pressed",!!sel[x]);b.onclick=function(){sel[x]=!sel[x];multi(id,items,sel,cb,lab,lim);if(cb)cb();var next=Array.from(el.children).find(function(n){return n.textContent===(lab?lab(x):String(x))});if(next)next.focus({preventScroll:true})};el.appendChild(b)});
 if(lim&&items.length>lim){var m=document.createElement("button");m.type="button";m.className="chip mo";m.textContent=ex?"收合":"更多 +"+(items.length-shown.length);m.setAttribute("aria-expanded",!!ex);m.onclick=function(){exp[id]=!ex;multi(id,items,sel,cb,lab,lim);el.lastElementChild.focus({preventScroll:true})};el.appendChild(m)}}
 function single(id,items,key){var el=$(id);el.innerHTML="";items.forEach(function(x){var b=document.createElement("button");b.type="button";b.className="chip"+(S[key]===x?" on":"");b.textContent=x;b.setAttribute("aria-pressed",S[key]===x);b.onclick=function(){S[key]=S[key]===x?"":x;single(id,items,key);render();Array.from(el.children).find(function(n){return n.textContent===x}).focus({preventScroll:true})};el.appendChild(b)})}
-function build(){var themes=uq("th"),styles=uq("st");multi("themes",themes,S.th,render,null,6);multi("styles",styles,S.st,render,null,6);multi("stages",STG,S.sg,render,null,5);single("langs",["中文","英文"],"lang");$("theme-row").hidden=!themes.length;$("style-row").hidden=!styles.length;var hasGroups=B.some(function(b){return !!b.gb});$("group-filter").hidden=!hasGroups;$("note-tab").hidden=!hasGroups&&S.tab!=="note"}
+function build(){var themes=uq("th").filter(function(theme){return !LIFE[lifeKey(theme)]}),styles=uq("st");multi("themes",themes,S.th,render,null,6);multi("styles",styles,S.st,render,null,6);multi("stages",STG,S.sg,render,null,5);single("langs",["中文","英文"],"lang");$("theme-row").hidden=!themes.length;$("style-row").hidden=!styles.length;var hasGroups=B.some(function(b){return !!b.gb});$("group-filter").hidden=!hasGroups;$("note-tab").hidden=!hasGroups&&S.tab!=="note"}
 function ageText(){var v=+$("age").value;$("agev").textContent=v<0?"不限年齡":v+" 歲";$("age").setAttribute("aria-valuetext",v<0?"不限年齡":v+" 歲")}
-function tagsH(b,c){var th=c?b.th.slice(0,2):b.th,st=c?b.st.slice(0,1):b.st;return (b.tw?'<span class="g">台灣作家</span>':'')+topk(b.stg,2).map(function(x){return '<span class="g">'+esc(x)+'</span>'}).join("")+th.map(function(x){return "<span>"+esc(x)+"</span>"}).join("")+st.map(function(x){return '<span class="s">'+esc(x)+"</span>"}).join("")}
+function tagsH(b,c){var stages=topk(b.stg,2),themes=b.th.filter(function(theme){return stages.indexOf(lifeKey(theme))<0}),th=c?themes.slice(0,2):themes,st=c?b.st.slice(0,1):b.st;return (b.tw?'<span class="g">台灣作家</span>':'')+stages.map(function(x){return '<span class="g">'+esc(x)+'</span>'}).join("")+th.map(function(x){return "<span>"+esc(x)+"</span>"}).join("")+st.map(function(x){return '<span class="s">'+esc(x)+"</span>"}).join("")}
 function barsH(o,keys,lab,vn){return keys.map(function(k){return '<div class="vb"><span>'+lab(k)+'</span><i style="width:'+Math.min(100,Math.round(o[k]/vn*100))+'%"></i><b>'+o[k]+'</b></div>'}).join("")}
 function closeAll(){var hadDialog=!!document.querySelector(".ov.show");$("ov").inert=false;document.querySelectorAll(".ov.show").forEach(function(el){el.classList.remove("show");el.setAttribute("aria-hidden","true")});document.body.classList.remove("modal-open");document.querySelectorAll("[data-page]").forEach(function(el){el.inert=false});if(!hadDialog)return;if(returnFocus&&returnFocus.isConnected&&returnFocus.getClientRects().length)returnFocus.focus({preventScroll:true});else{var replacement=returnBookId?document.querySelector('.'+returnFocusType+'[data-book-id="'+CSS.escape(returnBookId)+'"]'):null;(replacement||$("acct")).focus({preventScroll:true})}returnFocus=null;returnBookId=null}
 function showDialog(id){var el=$(id),current=document.querySelector(".ov.show"),same=el.classList.contains("show");if(!current){returnFocus=document.activeElement;returnBookId=returnFocus.dataset.bookId||null;returnFocusType=returnFocus.classList.contains("heart")?"heart":"book-link";}
@@ -226,6 +288,7 @@ if($("nowarn").checked)add("未標註注意事項",function(){$("nowarn").checke
 if($("onlygb").checked)add("開放集氣",function(){$("onlygb").checked=false});
 var el=$("active-filters");el.replaceChildren();tokens.forEach(function(token){var b=document.createElement("button");b.className="filter-token";b.textContent=token.label+" ×";b.setAttribute("aria-label","移除條件："+token.label);b.onclick=function(){token.clear();render();$("ftog").focus({preventScroll:true})};el.appendChild(b)});
 $("filter-label").textContent="篩選"+(tokens.length?" · "+tokens.length:"");$("twb").classList.toggle("on",S.tw);$("twb").setAttribute("aria-pressed",S.tw);$("clear-search").hidden=!$("q").value;
+syncLifePickers();
 document.querySelectorAll(".scenario").forEach(function(b,i){var spec=SC[i][1],th=Object.keys(S.th).filter(function(k){return S.th[k]}),sg=Object.keys(S.sg).filter(function(k){return S.sg[k]}),on=spec.th?th.length===1&&th[0]===spec.th&&!sg.length:sg.length===1&&sg[0]===spec.sg&&!th.length;b.classList.toggle("on",!!on);b.setAttribute("aria-pressed",!!on)})}
 function emptyState(title,description,action,label,mark){return '<div class="empty"><div class="empty-icon">'+icon(mark||'book')+'</div><h3>'+title+'</h3><p>'+description+'</p>'+(action?'<button class="btn y" onclick="'+action+'">'+label+'</button>':'')+'</div>'}
 function shUrl(){return location.href.split("#")[0]}
@@ -350,13 +413,13 @@ var o=B.filter(function(b){
 if(!(b.status==="published"||b.mine))return false;
 if(S.tab==="fav"&&!fav[b.id])return false;
 if(S.tab==="log"&&!log[b.id])return false;
-if(q&&(b.t+b.a+b.r+b.k+b.th.join()+b.st.join()).toLowerCase().indexOf(q)<0)return false;
+if(q&&(b.t+b.a+b.r+b.k+b.th.join()+b.st.join()+Object.keys(LIFE).filter(function(key){return fitsTheme(b,key)}).map(function(key){return LIFE[key].label+LIFE[key].aliases.join()}).join()).toLowerCase().indexOf(q)<0)return false;
 if(S.lang&&b.lang!==S.lang)return false;
 if(a>=0&&!fits(b,a))return false;
 if(nw&&b.w)return false;
 if(S.tw&&!b.tw)return false;
 if($("onlygb").checked&&!b.gb)return false;
-return th.every(function(x){return b.th.indexOf(x)>=0})&&st.every(function(x){return b.st.indexOf(x)>=0})&&sg.every(function(x){return fitsStage(b,x)})});
+return th.every(function(x){return fitsTheme(b,x)})&&st.every(function(x){return b.st.indexOf(x)>=0})&&sg.every(function(x){return fitsStage(b,x)})});
 var s=$("sort").value;
 if(s==="like")o.sort(function(x,y){return y.n-x.n});
 if(s==="vote")o.sort(function(x,y){return y.vn-x.vn});
@@ -525,8 +588,10 @@ function wire(){
 var labels={ov:"繪本推薦詳情",ovf:"分享繪本",ovl:"記錄閱讀",ovs:"分享好故事",ova:"登入與帳號",ovm:"管理後台",ovz:"繪本照片放大檢視"};
 Object.keys(labels).forEach(function(id){var el=$(id);el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");el.setAttribute("aria-label",labels[id]);el.setAttribute("aria-hidden","true");el.addEventListener("click",function(e){if(e.target===this)closeTopDialog()})});
 document.addEventListener("keydown",function(e){var active=$("ovz").classList.contains("show")?$("ovz"):document.querySelector(".ov.show");if(!active)return;if(e.key==="Escape"){e.preventDefault();closeTopDialog();return}if(e.key!=="Tab")return;var stops=Array.from(active.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex="0"]')).filter(function(n){return !n.disabled&&n.tabIndex>=0&&n.getClientRects().length});if(!stops.length){e.preventDefault();return}var first=stops[0],last=stops[stops.length-1];if(e.shiftKey&&(document.activeElement===first||!stops.includes(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!active.contains(document.activeElement))){e.preventDefault();first.focus()}});
-var scenarioIcons=["heart","school","moon","sprout","abc","numbers","friends"],scenarioColors=["#f3e6de","#edf0df","#eaeaf2","#f4ecd8","#e5ede7","#f2e8d9","#f0e5e7"],scenarioInks=["#ab735b","#7b8d54","#8882a5","#ad8d4b","#638970","#ac8756","#a27682"];
+var scenarioIcons=["heart","sprout","friends","friends","heart","school","moon"],scenarioColors=["#f3e6de","#edf0df","#e5ede7","#f0e5e7","#f4ecd8","#edf0df","#eaeaf2"],scenarioInks=["#ab735b","#7b8d54","#638970","#a27682","#ad8d4b","#7b8d54","#8882a5"];
 SC.forEach(function(spec,i){var b=document.createElement("button");b.type="button";b.className="scenario";b.setAttribute("aria-label",spec[0]);b.style.setProperty("--scenario-bg",scenarioColors[i]);b.style.setProperty("--scenario-ink",scenarioInks[i]);b.innerHTML=icon(scenarioIcons[i])+"<span>"+esc(spec[0])+"</span>";b.setAttribute("aria-pressed","false");b.onclick=function(){var on=this.getAttribute("aria-pressed")==="true";S.th={};S.sg={};if(!on){if(spec[1].th)S.th[spec[1].th]=true;if(spec[1].sg)S.sg[spec[1].sg]=true}selectShelf("all");build();render();$("discover").scrollIntoView({block:"start"})};$("scen").appendChild(b)});
+lifePicker("situations",false);lifePicker("form-situations",true);
+$("more-situations").onclick=function(){$("fbody").classList.add("open");$("ftog").setAttribute("aria-expanded","true");var first=$("situations").querySelector("details");first.open=true;$("situation-label").scrollIntoView({block:"start"});first.querySelector("summary").focus({preventScroll:true})};
 $("age").oninput=function(){ageText();render()};
 ["q","sort","nowarn","onlygb"].forEach(function(i){$(i).addEventListener("input",render)});
 $("q").addEventListener("keydown",function(e){if(e.key==="Enter"){this.blur();$("list").scrollIntoView({block:"start"})}});
@@ -550,8 +615,8 @@ $("f_ok").onclick=function(){if(!need("登入後才能分享繪本"))return;var 
 if(!$("f_t").reportValidity())return;
 if(PH.length&&!$("f_ck").checked){toast("請先勾選：照片中沒有孩子");return}
 var btn=this;btn.disabled=true;
-upPhotos().then(function(paths){return api("/rest/v1/books",{m:"POST",h:{Prefer:"return=representation"},b:{title:v("f_t"),author:v("f_a"),lang:v("f_lang"),is_taiwan:$("f_tw").checked,themes:sp(v("f_th")),styles:sp(v("f_st")),review:v("f_r"),kid_reaction:v("f_k"),warning:v("f_w"),guide_before:v("g_b"),guide_during:v("g_m"),guide_after:v("g_a"),photos:paths,status:"pending",suggested_ages:Object.keys(FA).filter(function(k){return FA[k]}).map(Number),suggested_stages:Object.keys(FS).filter(function(k){return FS[k]})}})}).then(function(rows){var x=rows[0];return me.admin?api("/rest/v1/books?id=eq."+x.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:"published"}}):null}).then(function(){
-["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
+upPhotos().then(function(paths){return api("/rest/v1/books",{m:"POST",h:{Prefer:"return=representation"},b:{title:v("f_t"),author:v("f_a"),lang:v("f_lang"),is_taiwan:$("f_tw").checked,themes:recommendationThemes(),styles:sp(v("f_st")),review:v("f_r"),kid_reaction:v("f_k"),warning:v("f_w"),guide_before:v("g_b"),guide_during:v("g_m"),guide_after:v("g_a"),photos:paths,status:"pending",suggested_ages:Object.keys(FA).filter(function(k){return FA[k]}).map(Number),suggested_stages:recommendationStages()}})}).then(function(rows){var x=rows[0];return me.admin?api("/rest/v1/books?id=eq."+x.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:"published"}}):null}).then(function(){
+["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};FT={};syncLifePickers();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
 btn.disabled=false;closeAll();toast(me.admin?"已公開":"已送出，審核通過後會公開");return refresh()}).catch(function(e){btn.disabled=false;err(e)})};
 $("ac_request").onsubmit=function(e){e.preventDefault();sendLoginEmail()};
 $("ac_verify").onsubmit=function(e){e.preventDefault();verifyEmailCode()};

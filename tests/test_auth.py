@@ -44,6 +44,8 @@ class EmailLoginTests(unittest.TestCase):
         self.verify_status = 200
         self.send_status = 200
         self.books = []
+        self.book_status = 201
+        self.age_votes = []
         self.stage_votes = []
         self.favorites = set()
         self.favorite_status = 201
@@ -98,7 +100,18 @@ class EmailLoginTests(unittest.TestCase):
         elif path == '/auth/v1/token':
             data = {'access_token': 'test-renewed', 'refresh_token': 'test-renewed-refresh', 'expires_in': 3600}
         elif path == '/rest/v1/books':
-            data = self.books
+            if req.method == 'POST':
+                status = self.book_status
+                if status >= 400:
+                    data = {'message': 'test failed submission'}
+                else:
+                    book = dict(body, id='submitted-%d' % len(self.books), submitted_by='test-parent')
+                    self.books.append(book)
+                    data = [book]
+            else:
+                data = self.books
+        elif path == '/rest/v1/book_age_votes':
+            data = self.age_votes
         elif path == '/rest/v1/book_stage_votes':
             data = self.stage_votes
         elif path == '/rest/v1/book_voter_counts':
@@ -323,8 +336,171 @@ class EmailLoginTests(unittest.TestCase):
 
     def test_other_scenarios_still_work(self):
         self.load_flow_books()
-        self.page.get_by_role('button', name='數字學習', exact=True).first.click()
+        self.open_situation_group('好奇與探索')
+        self.page.locator('#situations').get_by_role('button', name='數字學習', exact=True).click()
         expect(self.page.locator('.book-link')).to_have_text(['數字書'])
+
+    def open_situation_group(self, name, posting=False):
+        root = self.page.locator('#form-situations' if posting else '#situations')
+        if not posting and self.page.locator('#ftog').get_attribute('aria-expanded') == 'false':
+            self.page.locator('#more-situations').click()
+        group = root.locator('details').filter(has=self.page.locator('summary', has_text=name))
+        if group.get_attribute('open') is None:
+            group.locator('summary').click()
+        return group
+
+    def load_situation_books(self):
+        def book(bid, title, themes, **extra):
+            return dict({'id': bid, 'title': title, 'author': '測試作者', 'lang': '中文',
+                         'status': 'published', 'submitted_by': 'other-parent',
+                         'themes': themes, 'styles': [], 'photos': [], 'review': '共讀心得'}, **extra)
+        self.books = [
+            book('apology', '道歉的故事', ['道歉']),
+            book('manners', '禮貌的故事', ['禮貌']),
+            book('gratitude', '感激的故事', ['感激']),
+            book('sibling', '手足的故事', ['手足關係']),
+            book('both', '手足一起學道歉', ['學說對不起', '手足相處']),
+            book('unrelated', '其他主題的故事', ['太空'], review='這本沒有談到道歉'),
+            book('unpublished', '審核中的道歉故事', ['道歉'], status='pending'),
+        ]
+        self.age_votes = [{'book_id': 'both', 'age': 4, 'votes': 1},
+                          {'book_id': 'apology', 'age': 5, 'votes': 1}]
+        self.page.reload(wait_until='networkidle')
+
+    def test_all_situations_are_available_with_empty_catalog_and_counts(self):
+        self.page.locator('#more-situations').click()
+        expect(self.page.locator('#ftog')).to_have_attribute('aria-expanded', 'true')
+        expect(self.page.locator('#situations details')).to_have_count(6)
+        expect(self.page.locator('#situations [data-life]')).to_have_count(32)
+        for name in ['學說對不起', '有禮貌', '感恩與感激']:
+            button = self.page.locator('#situations').get_by_role('button', name=name, exact=True)
+            expect(button).to_be_enabled()
+            expect(button.locator('.situation-count')).to_have_text('0 本公開繪本')
+        self.page.locator('#situations').get_by_role('button', name='學說對不起', exact=True).click()
+        expect(self.page.locator('#count')).to_have_text('共 0 本繪本')
+        expect(self.page.locator('#active-filters')).to_contain_text('學說對不起')
+        self.page.get_by_role('button', name='清除條件，再找找', exact=True).click()
+        expect(self.page.locator('#situations [aria-pressed=true]')).to_have_count(0)
+
+    def test_parent_examples_match_existing_aliases_without_guessing_from_review(self):
+        self.load_situation_books()
+        expected = [('學說對不起', ['道歉的故事', '手足一起學道歉']),
+                    ('有禮貌', ['禮貌的故事']),
+                    ('手足相處', ['手足的故事', '手足一起學道歉']),
+                    ('感恩與感激', ['感激的故事'])]
+        for label, titles in expected:
+            with self.subTest(label=label):
+                shortcut = self.page.locator('#scen').get_by_role('button', name=label, exact=True)
+                shortcut.click()
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                self.open_situation_group('人際與家庭' if label == '手足相處' else '友善與品格')
+                button = self.page.locator('#situations').get_by_role('button', name=label, exact=True)
+                expect(button).to_have_attribute('aria-pressed', 'true')
+                expect(button.locator('.situation-count')).to_have_text(str(len(titles))+' 本公開繪本')
+                button.click()
+                expect(self.page.locator('.card')).to_have_count(6)
+                button.click()
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                expect(shortcut).to_have_attribute('aria-pressed', 'true')
+                shortcut.click()
+
+    def test_combined_situations_age_and_language_can_be_removed_individually(self):
+        self.load_situation_books()
+        self.page.locator('#scen').get_by_role('button', name='學說對不起', exact=True).click()
+        group = self.open_situation_group('人際與家庭')
+        group.get_by_role('button', name='手足相處', exact=True).click()
+        expect(self.page.locator('.book-link')).to_have_text(['手足一起學道歉'])
+        expect(group.locator('.situation-selection')).to_have_text('已選 1')
+        self.page.locator('#langs').get_by_role('button', name='中文', exact=True).click()
+        self.page.locator('#age').fill('4')
+        expect(self.page.locator('.book-link')).to_have_text(['手足一起學道歉'])
+        expect(self.page.locator('#active-filters button')).to_have_count(4)
+        self.page.get_by_role('button', name='移除條件：學說對不起', exact=True).click()
+        self.page.get_by_role('button', name='移除條件：4 歲', exact=True).click()
+        expect(self.page.locator('.book-link')).to_have_text(['手足的故事', '手足一起學道歉'])
+        self.page.locator('#reset').click()
+        expect(self.page.locator('.card')).to_have_count(6)
+        expect(self.page.locator('#situations [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#active-filters button')).to_have_count(0)
+
+    def test_keyword_search_understands_situation_aliases_and_custom_themes_remain(self):
+        self.load_situation_books()
+        for query in ['感恩', '感激', '感謝']:
+            self.page.locator('#q').fill(query)
+            expect(self.page.locator('.book-link')).to_have_text(['感激的故事'])
+        self.page.locator('#clear-search').click()
+        self.page.locator('#more-situations').click()
+        expect(self.page.locator('#themes')).not_to_contain_text('道歉')
+        self.page.locator('#themes').get_by_role('button', name='太空', exact=True).click()
+        expect(self.page.locator('.book-link')).to_have_text(['其他主題的故事'])
+
+    def test_selected_situations_round_trip_through_submission_and_reset(self):
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('手足學道歉與感謝')
+        self.page.locator('#fa').get_by_role('button', name='5 歲', exact=True).click()
+        for name in ['學說對不起', '感恩與感激']:
+            self.page.locator('#form-situations').get_by_role('button', name=name, exact=True).click()
+        self.open_situation_group('人際與家庭', posting=True).get_by_role('button', name='手足相處', exact=True).click()
+        self.open_situation_group('情緒與自我', posting=True).get_by_role('button', name='孩子難過或生氣', exact=True).click()
+        self.page.locator('#f_th').fill('道歉、感謝, 太空,太空')
+        self.page.locator('#ovf .optional-fields summary').click()
+        self.page.locator('#fs').get_by_role('button', name='情緒管理', exact=True).click()
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        payload = next(r['body'] for r in self.requests if r['path'] == '/rest/v1/books' and r['method'] == 'POST')
+        self.assertEqual(payload['themes'], ['學說對不起', '感恩與感激', '手足相處', '情緒管理', '太空'])
+        self.assertEqual(payload['suggested_stages'], ['情緒管理'])
+        self.assertEqual(payload['suggested_ages'], [5])
+        self.assertEqual(payload['status'], 'pending')
+        self.page.locator('#addb').click()
+        expect(self.page.locator('#form-situations [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#fs [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#fa [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#f_th')).to_have_value('')
+        self.page.locator('#ovf .x').click()
+        # Simulate moderation on the isolated backend; no production data is written.
+        self.books[0]['status'] = 'published'
+        self.page.reload(wait_until='networkidle')
+        for name in ['學說對不起', '有禮貌', '手足相處', '感恩與感激']:
+            button = self.page.locator('#scen').get_by_role('button', name=name, exact=True)
+            button.click()
+            expect(self.page.locator('.book-link')).to_have_text([] if name == '有禮貌' else ['手足學道歉與感謝'])
+            button.click()
+
+    def test_failed_submission_preserves_situations_for_retry(self):
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('保留投稿內容')
+        button = self.page.locator('#form-situations').get_by_role('button', name='學說對不起', exact=True)
+        button.click()
+        self.book_status = 503
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#toast')).to_contain_text('test failed submission')
+        expect(self.page.locator('#f_ok')).to_be_enabled()
+        expect(button).to_have_attribute('aria-pressed', 'true')
+        expect(self.page.locator('#f_t')).to_have_value('保留投稿內容')
+        self.book_status = 201
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        writes = [r for r in self.requests if r['path'] == '/rest/v1/books' and r['method'] == 'POST']
+        self.assertEqual([r['body']['themes'] for r in writes], [['學說對不起'], ['學說對不起']])
+
+    def test_situation_groups_are_keyboard_accessible_and_fit_mobile_and_desktop(self):
+        self.load_situation_books()
+        self.page.locator('#more-situations').click()
+        expect(self.page.locator('#situations summary').first).to_be_focused()
+        self.page.keyboard.press('Tab')
+        expect(self.page.locator('#situations [data-life="學說對不起"]')).to_be_focused()
+        self.page.keyboard.press('Enter')
+        expect(self.page.locator('#situations [data-life="學說對不起"]')).to_have_attribute('aria-pressed', 'true')
+        for width in [320, 390, 1280]:
+            with self.subTest(width=width):
+                self.page.set_viewport_size({'width': width, 'height': 844})
+                self.page.locator('#situations details').evaluate_all('(nodes)=>nodes.forEach(n=>n.open=true)')
+                self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+                self.assertTrue(self.page.locator('#situations button').evaluate_all(
+                    '(nodes)=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height>=44})'))
 
     def test_recommendation_resumes_after_code_login(self):
         self.page.locator('#addb').click()
