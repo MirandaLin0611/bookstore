@@ -67,7 +67,7 @@ create table public.book_votes (
   ages smallint[] not null default '{}'
     check (ages <@ array[0,1,2,3,4,5,6,7,8,9,10,11,12]::smallint[]),
   stages text[] not null default '{}'
-    check (stages <@ array['小班','中班','大班','數字學習','ABC學習','同儕關係','情緒管理','睡前共讀','生活習慣','親子互動']),
+    check (stages <@ array['幼幼班','小班','中班','大班','數字學習','ABC學習','同儕關係','情緒管理','睡前共讀','生活習慣','親子互動']),
   created_at timestamptz not null default now(),
   primary key (book_id, user_id),
   check (cardinality(ages) + cardinality(stages) >= 1)

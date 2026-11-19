@@ -47,6 +47,7 @@ class EmailLoginTests(unittest.TestCase):
         self.book_status = 201
         self.age_votes = []
         self.stage_votes = []
+        self.votes = {}
         self.favorites = set()
         self.favorite_status = 201
         self.stale_favorites = False
@@ -114,6 +115,17 @@ class EmailLoginTests(unittest.TestCase):
             data = self.age_votes
         elif path == '/rest/v1/book_stage_votes':
             data = self.stage_votes
+        elif path == '/rest/v1/book_votes':
+            if req.method == 'POST':
+                self.votes[body['book_id']] = body
+                for stage in body['stages']:
+                    vote = next((v for v in self.stage_votes if v['book_id'] == body['book_id'] and v['stage'] == stage), None)
+                    if vote:
+                        vote['votes'] += 1
+                    else:
+                        self.stage_votes.append({'book_id': body['book_id'], 'stage': stage, 'votes': 1})
+            else:
+                data = [{'book_id': bid} for bid in self.votes]
         elif path == '/rest/v1/book_voter_counts':
             data = [{'book_id': b['id'], 'voters': 1} for b in self.books]
         elif path == '/rest/v1/favorites':
@@ -331,6 +343,7 @@ class EmailLoginTests(unittest.TestCase):
                 self.page.locator('#stages').get_by_role('button', name=stage, exact=True).click()
                 expect(self.page.locator('.book-link')).to_have_text(titles)
                 expect(button).to_have_attribute('aria-pressed', 'true')
+                self.page.locator('#apply-filters').click()
                 button.click()
                 expect(self.page.locator('.card')).to_have_count(5)
 
@@ -338,6 +351,7 @@ class EmailLoginTests(unittest.TestCase):
         self.load_flow_books()
         self.open_situation_group('好奇與探索')
         self.page.locator('#situations').get_by_role('button', name='數字學習', exact=True).click()
+        self.page.locator('#apply-filters').click()
         expect(self.page.locator('.book-link')).to_have_text(['數字書'])
 
     def open_situation_group(self, name, posting=False):
@@ -379,6 +393,7 @@ class EmailLoginTests(unittest.TestCase):
         self.page.locator('#situations').get_by_role('button', name='學說對不起', exact=True).click()
         expect(self.page.locator('#count')).to_have_text('共 0 本繪本')
         expect(self.page.locator('#active-filters')).to_contain_text('學說對不起')
+        self.page.locator('#apply-filters').click()
         self.page.get_by_role('button', name='清除條件，再找找', exact=True).click()
         expect(self.page.locator('#situations [aria-pressed=true]')).to_have_count(0)
 
@@ -402,23 +417,27 @@ class EmailLoginTests(unittest.TestCase):
                 button.click()
                 expect(self.page.locator('.book-link')).to_have_text(titles)
                 expect(shortcut).to_have_attribute('aria-pressed', 'true')
+                self.page.locator('#apply-filters').click()
                 shortcut.click()
 
     def test_combined_situations_age_and_language_can_be_removed_individually(self):
         self.load_situation_books()
+        self.page.locator('#langs').get_by_role('button', name='中文', exact=True).click()
         self.page.locator('#scen').get_by_role('button', name='學說對不起', exact=True).click()
         group = self.open_situation_group('人際與家庭')
         group.get_by_role('button', name='手足相處', exact=True).click()
         expect(self.page.locator('.book-link')).to_have_text(['手足一起學道歉'])
         expect(group.locator('.situation-selection')).to_have_text('已選 1')
-        self.page.locator('#langs').get_by_role('button', name='中文', exact=True).click()
         self.page.locator('#age').fill('4')
         expect(self.page.locator('.book-link')).to_have_text(['手足一起學道歉'])
         expect(self.page.locator('#active-filters button')).to_have_count(4)
+        self.page.locator('#apply-filters').click()
         self.page.get_by_role('button', name='移除條件：學說對不起', exact=True).click()
         self.page.get_by_role('button', name='移除條件：4 歲', exact=True).click()
         expect(self.page.locator('.book-link')).to_have_text(['手足的故事', '手足一起學道歉'])
+        self.page.locator('#ftog').click()
         self.page.locator('#reset').click()
+        self.page.locator('#apply-filters').click()
         expect(self.page.locator('.card')).to_have_count(6)
         expect(self.page.locator('#situations [aria-pressed=true]')).to_have_count(0)
         expect(self.page.locator('#active-filters button')).to_have_count(0)
@@ -432,6 +451,7 @@ class EmailLoginTests(unittest.TestCase):
         self.page.locator('#more-situations').click()
         expect(self.page.locator('#themes')).not_to_contain_text('道歉')
         self.page.locator('#themes').get_by_role('button', name='太空', exact=True).click()
+        self.page.locator('#apply-filters').click()
         expect(self.page.locator('.book-link')).to_have_text(['其他主題的故事'])
 
     def test_selected_situations_round_trip_through_submission_and_reset(self):
@@ -501,6 +521,182 @@ class EmailLoginTests(unittest.TestCase):
                 self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
                 self.assertTrue(self.page.locator('#situations button').evaluate_all(
                     '(nodes)=>nodes.every(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.height>=44})'))
+
+    def load_facet_books(self):
+        self.load_flow_books()
+        for book, styles in zip(self.books, [['水彩風格'], ['溫柔'], ['拼貼'], ['插畫風格'], []]):
+            book['styles'] = styles
+        self.stage_votes.append({'book_id': 'emotion-vote', 'stage': '幼幼班', 'votes': 1})
+        self.age_votes = [{'book_id': 'emotion-vote', 'age': 2, 'votes': 1}]
+        self.page.reload(wait_until='networkidle')
+
+    def test_filter_selection_keeps_page_compact_and_result_action_visible(self):
+        self.load_situation_books()
+        compact_height = self.page.locator('.filters').bounding_box()['height']
+        self.page.locator('#more-situations').click()
+        expect(self.page.locator('#ovfilters')).to_be_visible()
+        expect(self.page.locator('#main')).to_have_attribute('inert', '')
+        page_scroll = self.page.evaluate('scrollY')
+        self.open_situation_group('人際與家庭').get_by_role('button', name='手足相處', exact=True).click()
+        self.page.locator('#situations').get_by_role('button', name='學說對不起', exact=True).click()
+        expect(self.page.locator('#apply-filters')).to_have_text('查看 1 本繪本')
+        self.assertLessEqual(self.page.locator('.filters').bounding_box()['height'], compact_height + 64)
+        token_height = self.page.locator('#active-filters').bounding_box()['height']
+        self.assertLessEqual(token_height, 50)
+        self.assertEqual(self.page.evaluate('scrollY'), page_scroll)
+        self.page.locator('#fbody').evaluate('(el)=>el.scrollTop=el.scrollHeight')
+        bounds = self.page.locator('#apply-filters').bounding_box()
+        self.assertGreaterEqual(bounds['y'], 0)
+        self.assertLessEqual(bounds['y'] + bounds['height'], 844)
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('#ovfilters')).not_to_be_visible()
+        expect(self.page.locator('#ftog')).to_have_attribute('aria-expanded', 'false')
+        expect(self.page.locator('#results-bar')).to_be_focused()
+        expect(self.page.locator('.book-link')).to_have_text(['手足一起學道歉'])
+        self.page.locator('#all-books').click()
+        expect(self.page.locator('.card')).to_have_count(6)
+        expect(self.page.locator('#active-filters')).to_be_empty()
+
+    def test_all_books_resets_every_filter_and_shelf_without_reload(self):
+        self.load_facet_books()
+        self.login_with_code()
+        self.page.locator('#langs').get_by_role('button', name='中文', exact=True).click()
+        self.page.locator('#q').fill('情緒')
+        self.page.locator('#ftog').click()
+        self.page.locator('#age').fill('2')
+        self.page.locator('#stages').get_by_role('button', name='幼幼班', exact=True).click()
+        self.page.locator('#styles').get_by_role('button', name='水彩', exact=True).click()
+        self.page.locator('#nowarn').check()
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('.book-link')).to_have_text(['情緒書（投票）'])
+        self.page.locator('.tab[data-t=fav]').click()
+        expect(self.page.locator('.card')).to_have_count(0)
+        requests_before = len(self.requests)
+        self.page.locator('#all-books').click()
+        expect(self.page.locator('.card')).to_have_count(5)
+        expect(self.page.locator('#q')).to_have_value('')
+        expect(self.page.locator('#active-filters')).to_be_empty()
+        expect(self.page.locator('.tab[data-t=all]')).to_have_attribute('aria-pressed', 'true')
+        expect(self.page.locator('#acct')).to_contain_text(self.nickname)
+        self.assertEqual(len(self.requests), requests_before)
+        self.page.locator('#ftog').click()
+        expect(self.page.locator('#age')).to_have_value('-1')
+        expect(self.page.locator('#nowarn')).not_to_be_checked()
+        self.page.locator('#styles').get_by_role('button', name='水彩', exact=True).click()
+        self.page.locator('#filter-all-books').click()
+        expect(self.page.locator('#ovfilters')).not_to_be_visible()
+        expect(self.page.locator('.card')).to_have_count(5)
+
+    def test_explore_links_and_home_logo_return_to_unfiltered_overview(self):
+        self.load_flow_books()
+        self.page.set_viewport_size({'width': 1280, 'height': 900})
+        for entry in ['.brand', '.header-nav [data-explore]', '.hero [data-explore]', '.tab[data-t=all]']:
+            with self.subTest(entry=entry):
+                self.page.locator('#scen').get_by_role('button', name='孩子難過或生氣', exact=True).click()
+                expect(self.page.locator('.card')).to_have_count(2)
+                self.page.locator(entry).click()
+                expect(self.page.locator('.card')).to_have_count(5)
+                expect(self.page.locator('#active-filters')).to_be_empty()
+
+    def test_filter_escape_and_close_restore_focus_and_mobile_actions_stay_visible(self):
+        for method in ['escape', 'button', 'backdrop']:
+            with self.subTest(method=method):
+                self.page.locator('#ftog').click()
+                if method == 'escape':
+                    self.page.keyboard.press('Escape')
+                elif method == 'button':
+                    self.page.locator('#ovfilters .filter-close').click()
+                else:
+                    self.page.locator('#ovfilters').click(position={'x': 2, 'y': 2})
+                expect(self.page.locator('#ftog')).to_be_focused()
+                expect(self.page.locator('#ftog')).to_have_attribute('aria-expanded', 'false')
+        self.page.locator('#ftog').click()
+        for width, height in [(320, 568), (390, 844), (844, 390), (1280, 900)]:
+            with self.subTest(width=width, height=height):
+                self.page.set_viewport_size({'width': width, 'height': height})
+                self.page.locator('#situations details').evaluate_all('(nodes)=>nodes.forEach(n=>n.open=true)')
+                self.page.locator('#fbody').evaluate('(el)=>el.scrollTop=el.scrollHeight')
+                self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+                for action in ['#filter-all-books', '#apply-filters']:
+                    rect = self.page.locator(action).bounding_box()
+                    self.assertGreaterEqual(rect['y'], 0)
+                    self.assertLessEqual(rect['y']+rect['height'], height)
+                self.page.locator('#apply-filters').focus()
+                self.page.keyboard.press('Tab')
+                expect(self.page.locator('#ovfilters .filter-close')).to_be_focused()
+
+    def test_styles_show_preset_choices_match_aliases_and_preserve_custom_styles(self):
+        self.page.locator('#ftog').click()
+        expect(self.page.locator('#styles button')).to_have_count(12)
+        for style in ['水彩', '手繪', '拼貼／剪紙', '攝影', '漫畫', '黑白線條', '溫柔療癒', '幽默趣味']:
+            expect(self.page.locator('#styles').get_by_role('button', name=style, exact=True)).to_be_visible()
+        self.page.locator('#apply-filters').click()
+        self.load_facet_books()
+        for style, title in [('水彩', '情緒書（投票）'), ('溫柔療癒', '情緒書（主題）'),
+                             ('拼貼／剪紙', '睡前書（投票）'), ('插畫風格', '睡前書（主題）')]:
+            with self.subTest(style=style):
+                self.page.locator('#ftog').click()
+                self.page.locator('#styles').get_by_role('button', name=style, exact=True).click()
+                self.page.locator('#apply-filters').click()
+                expect(self.page.locator('.book-link')).to_have_text([title])
+                self.page.locator('#all-books').click()
+        self.page.locator('#ftog').click()
+        self.page.locator('#styles').get_by_role('button', name='攝影', exact=True).click()
+        expect(self.page.locator('#apply-filters')).to_have_text('查看 0 本繪本')
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('.card')).to_have_count(0)
+        self.page.locator('#all-books').click()
+        expect(self.page.locator('.card')).to_have_count(5)
+
+    def test_young_class_and_styles_submission_deduplicate_reset_and_filter_after_publication(self):
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('幼幼班的水彩故事')
+        self.page.locator('#ovf .optional-fields summary').click()
+        self.page.locator('#fs').get_by_role('button', name='幼幼班', exact=True).click()
+        self.page.locator('#f_styles').get_by_role('button', name='水彩', exact=True).click()
+        self.page.locator('#f_styles').get_by_role('button', name='溫柔療癒', exact=True).click()
+        self.page.locator('#f_st').fill('水彩風格、溫柔,蠟筆,蠟筆')
+        self.book_status = 503
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#toast')).to_contain_text('test failed submission')
+        expect(self.page.locator('#f_ok')).to_be_enabled()
+        expect(self.page.locator('#f_styles [aria-pressed=true]')).to_have_count(2)
+        self.book_status = 201
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        payload = [r['body'] for r in self.requests if r['path'] == '/rest/v1/books' and r['method'] == 'POST'][-1]
+        self.assertEqual(payload['suggested_stages'], ['幼幼班'])
+        self.assertEqual(payload['styles'], ['水彩', '溫柔療癒', '蠟筆'])
+        self.page.locator('#addb').click()
+        expect(self.page.locator('#f_styles [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#fs [aria-pressed=true]')).to_have_count(0)
+        expect(self.page.locator('#f_st')).to_have_value('')
+        self.page.locator('#ovf .x').click()
+        self.books[0]['status'] = 'published'
+        self.stage_votes = [{'book_id': self.books[0]['id'], 'stage': '幼幼班', 'votes': 1}]
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('#ftog').click()
+        self.page.locator('#stages').get_by_role('button', name='幼幼班', exact=True).click()
+        self.page.locator('#styles').get_by_role('button', name='水彩', exact=True).click()
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('.book-link')).to_have_text(['幼幼班的水彩故事'])
+
+    def test_young_class_can_be_voted_and_loaded_on_next_visit(self):
+        self.load_flow_books()
+        self.login_with_code()
+        self.page.locator('.book-link').first.click()
+        self.page.locator('#vs').get_by_role('button', name='幼幼班', exact=True).click()
+        self.page.get_by_role('button', name='送出我的建議', exact=True).click()
+        expect(self.page.locator('#md')).to_contain_text('你已經送出過建議')
+        vote = next(r['body'] for r in self.requests if r['path'] == '/rest/v1/book_votes' and r['method'] == 'POST')
+        self.assertEqual(vote['stages'], ['幼幼班'])
+        self.page.locator('#ov .x').click()
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('#ftog').click()
+        self.page.locator('#stages').get_by_role('button', name='幼幼班', exact=True).click()
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('.book-link')).to_have_text(['情緒書（投票）'])
 
     def test_recommendation_resumes_after_code_login(self):
         self.page.locator('#addb').click()
