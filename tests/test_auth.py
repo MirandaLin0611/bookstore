@@ -7,6 +7,7 @@ import shutil
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import unittest
+import uuid
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -558,6 +559,74 @@ class EmailLoginTests(unittest.TestCase):
                 self.page.set_viewport_size({'width': width, 'height': 844})
                 query.fill('腦洞大開 有創意 水彩')
                 self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
+    def test_unregistered_keywords_are_searchable_across_all_public_book_text_fields(self):
+        fields = ['title', 'author', 'review', 'kid_reaction', 'themes', 'styles',
+                  'guide_before', 'guide_during', 'guide_after', 'warning']
+        cases = []
+        self.books = []
+        for field in fields:
+            keyword = '新詞' + uuid.uuid4().hex[:10]
+            book = {'id': field, 'title': '書籍 ' + field, 'author': '作者', 'lang': '中文',
+                    'status': 'published', 'submitted_by': 'other-parent',
+                    'themes': [], 'styles': [], 'photos': [], 'review': '共讀心得'}
+            book[field] = [keyword] if field in ['themes', 'styles'] else keyword
+            self.books.append(book)
+            cases.append((field, keyword, book['title']))
+        private_source = self.books[-1]
+        for status in ['pending', 'hidden']:
+            self.books.append(dict(private_source, id=status, title='未公開書籍', status=status))
+        self.page.reload(wait_until='networkidle')
+        requests_before = len(self.requests)
+        for field, keyword, title in cases:
+            with self.subTest(field=field):
+                self.page.locator('#q').fill(keyword)
+                expect(self.page.locator('.book-link')).to_have_text([title])
+                expect(self.page.locator('#active-filters')).to_be_empty()
+                expect(self.page.locator('#ovfilters')).not_to_be_visible()
+        self.assertEqual(len(self.requests), requests_before)
+        expect(self.page.locator('#situations [data-life]')).to_have_count(32)
+
+    def test_new_post_text_tags_and_guides_become_searchable_without_new_situations(self):
+        keywords = ['新詞' + uuid.uuid4().hex[:10] for _ in range(4)]
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('剛分享的故事')
+        self.page.locator('#f_r').fill(keywords[0])
+        self.page.locator('#f_th').fill(keywords[1])
+        self.page.locator('#ovf .optional-fields summary').click()
+        self.page.locator('#f_st').fill(keywords[2])
+        self.page.locator('#g_b').fill(keywords[3])
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        self.assertEqual(self.books[0]['themes'], [keywords[1]])
+        self.assertEqual(self.books[0]['styles'], [keywords[2]])
+        self.books[0]['status'] = 'published'
+        self.page.reload(wait_until='networkidle')
+        for keyword in keywords:
+            with self.subTest(keyword=keyword):
+                self.page.locator('#q').fill(keyword)
+                expect(self.page.locator('.book-link')).to_have_text(['剛分享的故事'])
+        self.books[0]['guide_before'] = '替換' + uuid.uuid4().hex[:10]
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('#q').fill(keywords[3])
+        expect(self.page.locator('.card')).to_have_count(0)
+        self.page.locator('#q').fill(self.books[0]['guide_before'])
+        expect(self.page.locator('.book-link')).to_have_text(['剛分享的故事'])
+        expect(self.page.locator('#situations [data-life]')).to_have_count(32)
+
+    def test_book_language_age_and_author_labels_can_be_searched_without_filters(self):
+        self.load_search_books()
+        self.books[0]['is_taiwan'] = True
+        self.page.reload(wait_until='networkidle')
+        cases = [('中文', [b['title'] for b in self.books if b['status'] == 'published' and b['lang'] == '中文']),
+                 ('英文', ['A Sky of Ideas']), ('4歲', ['點子小宇宙']),
+                 ('台灣作家', ['點子小宇宙'])]
+        for keyword, titles in cases:
+            with self.subTest(keyword=keyword):
+                self.page.locator('#q').fill(keyword)
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                expect(self.page.locator('#active-filters')).to_be_empty()
 
     def test_selected_situations_round_trip_through_submission_and_reset(self):
         self.login_with_code()
