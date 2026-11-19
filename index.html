@@ -6,7 +6,7 @@
 <title>繪本小聚場</title>
 <meta name="description" content="家長親自讀過的繪本推薦。依年齡與生活情境找書，看看孩子的真實反應，收藏下一本想一起讀的故事。">
 <meta name="theme-color" content="#faf8f1">
-<link rel="stylesheet" href="styles.css?v=browse-2">
+<link rel="stylesheet" href="styles.css?v=keyword-1">
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -67,14 +67,16 @@
     <div class="filters" role="search" aria-label="搜尋及篩選繪本">
       <div class="search-row">
         <div class="search-field"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-          <label class="sr-only" for="q">搜尋書名、作者或心得</label>
-          <input type="text" id="q" placeholder="搜尋書名、作者或心得…" autocomplete="off" enterkeyhint="search">
+          <label class="sr-only" for="q">搜尋書名、作者或想找的方向</label>
+          <input type="text" id="q" placeholder="試試「天馬行空」、書名或作者…" autocomplete="off" enterkeyhint="search" aria-describedby="search-help search-context">
           <button class="search-clear" id="clear-search" aria-label="清除搜尋文字" hidden>×</button>
         </div>
         <button class="btn ftog" id="ftog" aria-expanded="false" aria-haspopup="dialog" aria-controls="ovfilters"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-filter"></use></svg><span id="filter-label">篩選</span></button>
         <label class="sr-only" for="sort">書單排序</label>
         <select id="sort"><option value="">最新分享</option><option value="vote">最多家長投票</option><option value="like">最多家長覺得有幫助</option><option value="age">建議年齡由小到大</option></select>
       </div>
+      <p class="search-help" id="search-help">也能搜「有創意」這類想法；多個關鍵字用空白分隔，找同時符合的書。</p>
+      <p class="search-context" id="search-context" hidden></p>
       <div class="quick-filters"><span class="lab" id="language-label">語言</span><div id="langs" class="fr" role="group" aria-labelledby="language-label"></div><button type="button" class="chip" id="twb" aria-pressed="false">台灣作家</button></div>
       <div class="active-filters" id="active-filters" aria-label="已套用的條件"></div>
     </div>
@@ -241,10 +243,12 @@ var LIFE_GROUPS=[
     {key:"數字學習",aliases:["數字","數數","數學啟蒙"],stage:"數字學習"},
     {key:"自然與動物",aliases:["自然","動物","植物","大自然"]},
     {key:"科學與探索",aliases:["科學","科普","探索"]},
-    {key:"想像與創作",aliases:["想像","想像力","創作","創造力"]}
+    {key:"想像與創作",aliases:["想像","想像力","創作","創造力","創意","有創意","天馬行空","腦洞大開","奇思妙想"]}
   ]}
 ];
 var LIFE={},LIFE_ALIASES=Object.create(null);LIFE_GROUPS.forEach(function(group){group.items.forEach(function(item){item.label=item.label||item.key;item.aliases=item.aliases||[];LIFE[item.key]=item;[item.key,item.label].concat(item.aliases).forEach(function(alias){LIFE_ALIASES[alias.toLowerCase()]=item.key})})});
+var SEARCH_ALIASES=Object.create(null);
+Object.keys(LIFE).map(function(key){return LIFE[key]}).concat(STYLE_OPTIONS).forEach(function(item){var words=[item.key,item.label||item.key].concat(item.aliases).map(normalizeSearch).filter(function(word,i,all){return all.indexOf(word)===i}),group={label:item.label||item.key,words:words};words.forEach(function(word){if(!SEARCH_ALIASES[word])SEARCH_ALIASES[word]=group})});
 var SC=["情緒管理","學說對不起","有禮貌","手足相處","感恩與感激","新環境","睡前共讀"].map(function(key){var item=LIFE[key];return [item.label,item.stage?{sg:item.stage}:{th:key}]});
 var PH=[],FT={},pendingLoginAction=null;
 var loadError="",returnFocus=null,returnBookId=null,returnFocusType=null,zoomReturnFocus=null;
@@ -271,6 +275,11 @@ function fitsTheme(b,theme){var key=lifeKey(theme),item=LIFE[key];return b.th.so
 function fitsStage(b,stage){return topk(b.stg,3).indexOf(stage)>=0||fitsTheme(b,stage)}
 function styleKey(value){return STYLE_ALIASES[value.trim()]||value.trim()}
 function fitsStyle(b,style){return b.st.some(function(value){return styleKey(value)===styleKey(style)})}
+function normalizeSearch(value){return value.normalize("NFKC").toLowerCase().trim()}
+function searchPlan(value){return normalizeSearch(value).split(/[\s,、;]+/).filter(function(term,i,all){return term&&all.indexOf(term)===i}).map(function(term){var group=SEARCH_ALIASES[term];return {term:term,words:group?group.words:[term],label:group?group.label:""}})}
+function searchableText(b){var related=Object.keys(LIFE).filter(function(key){return fitsTheme(b,key)}).map(function(key){return [key,LIFE[key].label].concat(LIFE[key].aliases).join("\n")}),styles=STYLE_OPTIONS.filter(function(item){return fitsStyle(b,item.key)}).map(function(item){return [item.key].concat(item.aliases).join("\n")});return [b.t,b.a,b.r,b.k].concat(b.th,b.st,topk(b.stg,STG.length),related,styles).map(normalizeSearch).join("\n")}
+function matchesSearch(b,plan){if(!plan.length)return true;var text=searchableText(b);return plan.every(function(item){return item.words.some(function(word){return text.indexOf(word)>=0})})}
+function syncSearchContext(){var labels=searchPlan($("q").value).filter(function(item){return item.label&&normalizeSearch(item.label)!==item.term}).map(function(item){return item.label}).filter(function(label,i,all){return all.indexOf(label)===i}),el=$("search-context");el.hidden=!labels.length;el.textContent=labels.length?"也會找："+labels.join("、"):""}
 function recommendationStyles(){var values=Object.keys(FSTYLE).filter(function(key){return FSTYLE[key]}).concat($("f_st").value.split(/[,，、]/));return values.map(styleKey).filter(function(value,i,all){return value&&all.indexOf(value)===i})}
 function lifeSelected(item){return !!(item.stage?S.sg[item.stage]:S.th[item.key])}
 function lifePicker(id,posting){var root=$(id);LIFE_GROUPS.forEach(function(group,i){var detail=document.createElement("details"),summary=document.createElement("summary"),title=document.createElement("span"),selected=document.createElement("span"),options=document.createElement("div");detail.className="situation-group";detail.open=i===0;title.textContent=group.name;selected.className="situation-selection";selected.hidden=true;summary.append(title,selected);options.className="fr situation-options";options.setAttribute("role","group");options.setAttribute("aria-label",(posting?"投稿情境：":"篩選情境：")+group.name);
@@ -316,7 +325,7 @@ if($("nowarn").checked)add("未標註注意事項",function(){$("nowarn").checke
 if($("onlygb").checked)add("開放集氣",function(){$("onlygb").checked=false});
 var el=$("active-filters");el.replaceChildren();tokens.forEach(function(token){var b=document.createElement("button");b.className="filter-token";b.textContent=token.label+" ×";b.setAttribute("aria-label","移除條件："+token.label);b.onclick=function(){token.clear();render();$("ftog").focus({preventScroll:true})};el.appendChild(b)});
 $("filter-label").textContent="篩選"+(tokens.length?" · "+tokens.length:"");$("twb").classList.toggle("on",S.tw);$("twb").setAttribute("aria-pressed",S.tw);$("clear-search").hidden=!$("q").value;
-syncLifePickers();
+syncLifePickers();syncSearchContext();
 $("apply-filters").textContent=loaded?"查看 "+list().length+" 本繪本":"載入書架中…";
 document.querySelectorAll(".scenario").forEach(function(b,i){var spec=SC[i][1],th=Object.keys(S.th).filter(function(k){return S.th[k]}),sg=Object.keys(S.sg).filter(function(k){return S.sg[k]}),on=spec.th?th.length===1&&th[0]===spec.th&&!sg.length:sg.length===1&&sg[0]===spec.sg&&!th.length;b.classList.toggle("on",!!on);b.setAttribute("aria-pressed",!!on)})}
 function emptyState(title,description,action,label,mark){return '<div class="empty"><div class="empty-icon">'+icon(mark||'book')+'</div><h3>'+title+'</h3><p>'+description+'</p>'+(action?'<button class="btn y" onclick="'+action+'">'+label+'</button>':'')+'</div>'}
@@ -436,13 +445,13 @@ if(me.admin)return api("/rest/v1/comment_reports?select=comment_id").then(functi
 function refresh(){loadError="";loaded=false;render();return loadAll().then(loadMine).then(function(){return api("/rest/v1/books?select=id,submitted_by").then(function(rows){var m={};(rows||[]).forEach(function(x){m[x.id]=x.submitted_by});B.forEach(function(b){b.mine=!!(me&&m[b.id]===me.id)})})}).then(function(){acctBtn();build();render()}).catch(function(e){loaded=true;loadError=e.message||"connection";render()})}
 function noteList(){return B.filter(function(b){return b.gb&&joined[b.id]&&b.gb.status!=="collecting"})}
 function list(){
-var q=$("q").value.trim().toLowerCase(),a=+$("age").value,nw=$("nowarn").checked;
+var query=searchPlan($("q").value),a=+$("age").value,nw=$("nowarn").checked;
 var th=Object.keys(S.th).filter(function(k){return S.th[k]}),st=Object.keys(S.st).filter(function(k){return S.st[k]}),sg=Object.keys(S.sg).filter(function(k){return S.sg[k]});
 var o=B.filter(function(b){
 if(!(b.status==="published"||b.mine))return false;
 if(S.tab==="fav"&&!fav[b.id])return false;
 if(S.tab==="log"&&!log[b.id])return false;
-if(q&&(b.t+b.a+b.r+b.k+b.th.join()+b.st.join()+Object.keys(LIFE).filter(function(key){return fitsTheme(b,key)}).map(function(key){return LIFE[key].label+LIFE[key].aliases.join()}).join()).toLowerCase().indexOf(q)<0)return false;
+if(!matchesSearch(b,query))return false;
 if(S.lang&&b.lang!==S.lang)return false;
 if(a>=0&&!fits(b,a))return false;
 if(nw&&b.w)return false;
@@ -623,7 +632,7 @@ lifePicker("situations",false);lifePicker("form-situations",true);
 $("more-situations").onclick=function(){openFilters(true)};
 $("age").oninput=function(){ageText();render()};
 ["q","sort","nowarn","onlygb"].forEach(function(i){$(i).addEventListener("input",render)});
-$("q").addEventListener("keydown",function(e){if(e.key==="Enter"){this.blur();$("list").scrollIntoView({block:"start"})}});
+$("q").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.isComposing){e.preventDefault();this.blur();showResults()}});
 $("clear-search").onclick=function(){$("q").value="";render();$("q").focus()};
 $("reset").onclick=clearFilters;
 $("all-books").onclick=showAllBooks;$("filter-all-books").onclick=showAllBooks;$("apply-filters").onclick=showResults;
