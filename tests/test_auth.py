@@ -62,6 +62,7 @@ class EmailLoginTests(unittest.TestCase):
         self.favorite_status = 201
         self.stale_favorites = False
         self.nickname = '原本的暱稱'
+        self.user_id = 'test-parent'
         self.held_users = []
         self.hold_user = False
         self.contexts = []
@@ -75,8 +76,10 @@ class EmailLoginTests(unittest.TestCase):
             context.close()
         self.assertEqual(self.errors, [])
 
-    def new_context(self):
-        context = self.browser.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
+    def new_context(self, **options):
+        settings = {'viewport': {'width': 390, 'height': 844}, 'reduced_motion': 'reduce'}
+        settings.update(options)
+        context = self.browser.new_context(**settings)
         context.route('**/config.js*', lambda route: route.fulfill(
             content_type='application/javascript', body='window.APP_CONFIG = ' + json.dumps({
                 'SUPABASE_URL': 'https://auth-tests.supabase.co',
@@ -104,7 +107,7 @@ class EmailLoginTests(unittest.TestCase):
             status = self.verify_status
             data = {'access_token': 'test-access', 'refresh_token': 'test-refresh', 'expires_in': 3600} if status == 200 else {'code': 'otp_expired'}
         elif path == '/auth/v1/user':
-            data = {'id': 'test-parent', 'email': 'parent@example.com'}
+            data = {'id': self.user_id, 'email': 'parent@example.com'}
             if self.hold_user:
                 self.held_users.append(route)
                 return
@@ -1353,6 +1356,192 @@ class EmailLoginTests(unittest.TestCase):
         self.page.locator('#addb').click()
         self.finish_open_login()
         expect(self.page.locator('#ovf')).to_be_visible()
+
+
+    def test_mobile_guide_has_ios_steps_safe_url_manifest_and_restores_focus(self):
+        context = self.new_context(user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1')
+        page = context.new_page()
+        page.goto(self.base+'?source=threads#private-fragment', wait_until='networkidle')
+        button = page.locator('#home-shortcut button')
+        button.click()
+        expect(page.locator('#ovinstall')).to_be_visible()
+        expect(page.locator('#install-ios')).to_be_visible()
+        expect(page.locator('#install-android')).to_be_hidden()
+        expect(page.locator('#install-ios')).to_contain_text('Threads、LINE')
+        expect(page.locator('#install-url')).to_have_value(self.base)
+        expect(page.locator('.mobile-nav')).to_be_hidden()
+        page.keyboard.press('Escape')
+        expect(button).to_be_focused()
+        expect(page.locator('.mobile-nav')).to_be_visible()
+        manifest_url = page.locator('link[rel=manifest]').get_attribute('href')
+        manifest = page.request.get(self.base+manifest_url).json()
+        self.assertEqual(manifest['display'], 'standalone')
+        self.assertEqual(manifest['scope'], './')
+        for icon in manifest['icons']:
+            self.assertTrue(page.request.get(self.base+icon['src']).ok)
+        self.assertFalse(any(r['method'] != 'GET' for r in self.requests))
+
+    def test_native_install_requires_click_and_installed_mode_hides_prompts(self):
+        self.page.evaluate('''() => {
+          window.installPrompts=0;
+          const event=new Event('beforeinstallprompt',{cancelable:true});
+          event.prompt=()=>{window.installPrompts++;return Promise.resolve()};
+          event.userChoice=Promise.resolve({outcome:'dismissed'});
+          window.dispatchEvent(event);
+        }''')
+        self.assertEqual(self.page.evaluate('window.installPrompts'), 0)
+        self.page.locator('#home-shortcut button').click()
+        self.page.locator('#install-native').click()
+        expect(self.page.locator('#install-status')).to_contain_text('稍後')
+        self.assertEqual(self.page.evaluate('window.installPrompts'), 1)
+        self.page.keyboard.press('Escape')
+        self.context.add_init_script("Object.defineProperty(navigator,'standalone',{value:true})")
+        self.page.reload(wait_until='networkidle')
+        expect(self.page.locator('#home-shortcut')).to_be_hidden()
+        for button in self.page.locator('[data-install-guide]').all():
+            expect(button).to_be_hidden()
+
+    def test_mobile_shortcuts_return_to_all_books_and_unfiltered_saved_shelf(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.page.locator('#q').fill('找不到的書名')
+        self.page.locator('[data-mobile=shelf]').click()
+        expect(self.page.locator('#q')).to_have_value('')
+        expect(self.page.locator('.book-link')).to_have_text(['原本的書名'])
+        expect(self.page.locator('[data-mobile=shelf]')).to_have_attribute('aria-pressed', 'true')
+        self.page.locator('[data-mobile=explore]').click()
+        expect(self.page.locator('.book-link')).to_have_count(2)
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#ovf')).to_be_visible()
+        expect(self.page.locator('.mobile-nav')).to_be_hidden()
+
+    def test_home_screen_launch_shortcuts_resume_login_and_open_saved_shelf(self):
+        self.page.goto(self.base+'?go=share', wait_until='networkidle')
+        expect(self.page.locator('#ova')).to_be_visible()
+        self.assertNotIn('go=', self.page.url)
+        self.finish_open_login()
+        expect(self.page.locator('#ovf')).to_be_visible()
+        self.page.locator('#f_t').fill('從桌面捷徑開始的心得')
+        self.page.goto(self.base+'?go=share', wait_until='networkidle')
+        expect(self.page.locator('#ovf')).to_be_visible()
+        expect(self.page.locator('#f_t')).to_have_value('從桌面捷徑開始的心得')
+        self.page.goto(self.base+'?go=shelf', wait_until='networkidle')
+        expect(self.page.locator('[data-mobile=shelf]')).to_have_attribute('aria-pressed', 'true')
+
+    def test_recommendation_text_and_choices_survive_browser_close_without_publishing(self):
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        self.page.locator('#f_t').fill('還沒寫完的共讀故事')
+        self.page.locator('#f_r').fill('孩子指著畫面說，這好像我們昨天遇到的事情。')
+        self.page.locator('#f_lang').select_option('英文')
+        self.page.locator('#fa').get_by_role('button', name='4 歲', exact=True).click()
+        self.page.locator('#form-situations').get_by_role('button', name='學說對不起', exact=True).click()
+        self.page.locator('#ovf .optional-fields summary').click()
+        self.page.locator('#f_styles').get_by_role('button', name='水彩', exact=True).click()
+        self.page.locator('#g_b').fill('先一起猜封面。')
+        stored = self.page.evaluate('localStorage.getItem("pb-recommend-draft:test-parent")')
+        draft = json.loads(stored)
+        self.assertEqual(draft['ages'], ['4'])
+        self.assertEqual(draft['themes'], ['學說對不起'])
+        for sensitive in ['access_token', 'refresh_token', 'photos', 'email']:
+            self.assertNotIn(sensitive, draft)
+        self.assertFalse(any(r['path']=='/rest/v1/books' and r['method']=='POST' for r in self.requests))
+        second = self.context.new_page()
+        self.open_page(second)
+        second.locator('[data-mobile=write]').click()
+        second.locator('#f_k').fill('另一個分頁補充了孩子的反應')
+        second.close()
+        self.page.close()
+        self.page = self.context.new_page()
+        self.page.on('pageerror', lambda e: self.errors.append(str(e)))
+        self.open_page(self.page)
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#f_t')).to_have_value('還沒寫完的共讀故事')
+        expect(self.page.locator('#f_lang')).to_have_value('英文')
+        expect(self.page.locator('#f_k')).to_have_value('另一個分頁補充了孩子的反應')
+        expect(self.page.locator('#fa').get_by_role('button', name='4 歲', exact=True)).to_have_attribute('aria-pressed', 'true')
+        expect(self.page.locator('#form-situations').get_by_role('button', name='學說對不起', exact=True)).to_have_attribute('aria-pressed', 'true')
+        self.page.locator('#ovf .optional-fields summary').click()
+        expect(self.page.locator('#f_styles').get_by_role('button', name='水彩', exact=True)).to_have_attribute('aria-pressed', 'true')
+        expect(self.page.locator('#g_b')).to_have_value('先一起猜封面。')
+        expect(self.page.locator('#draft-status')).to_contain_text('已帶回')
+        self.assertEqual(self.page.evaluate('PH'), [])
+
+    def test_recommendation_drafts_stay_with_their_account_when_switching_users(self):
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        self.page.locator('#f_t').fill('第一位家長的私人草稿')
+        self.page.locator('#ovf .x').click()
+        self.page.locator('#acct').click()
+        self.page.locator('#ac_off').click()
+        expect(self.page.locator('#acct')).to_have_text('登入／註冊')
+        self.user_id = 'second-parent'
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#f_t')).to_have_value('')
+        self.page.locator('#f_t').fill('第二位家長的私人草稿')
+        self.page.locator('#ovf .x').click()
+        self.page.locator('#acct').click()
+        self.page.locator('#ac_off').click()
+        expect(self.page.locator('#acct')).to_have_text('登入／註冊')
+        self.user_id = 'test-parent'
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#f_t')).to_have_value('第一位家長的私人草稿')
+        other = self.page.evaluate('JSON.parse(localStorage.getItem("pb-recommend-draft:second-parent"))')
+        self.assertEqual(other['values']['f_t'], '第二位家長的私人草稿')
+
+    def test_recommendation_draft_clear_can_be_canceled_and_submit_clears_saved_text(self):
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        self.page.locator('#f_t').fill('尚未完成')
+        self.page.once('dialog', lambda dialog: dialog.dismiss())
+        self.page.locator('#draft-clear').click()
+        expect(self.page.locator('#f_t')).to_have_value('尚未完成')
+        self.page.once('dialog', lambda dialog: dialog.accept())
+        self.page.locator('#draft-clear').click()
+        expect(self.page.locator('#f_t')).to_have_value('')
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("pb-recommend-draft:test-parent")'))
+        self.page.locator('#f_t').fill('準備送出的心得')
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).to_be_hidden()
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("pb-recommend-draft:test-parent")'))
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#f_t')).to_have_value('')
+
+    def test_failed_submission_keeps_persistent_draft_until_successful_retry(self):
+        self.login_with_code()
+        self.page.locator('[data-mobile=write]').click()
+        self.page.locator('#f_t').fill('送出失敗後仍保留的故事')
+        self.book_status = 503
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#f_ok')).to_be_enabled()
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#f_t')).to_have_value('送出失敗後仍保留的故事')
+        self.book_status = 201
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).to_be_hidden()
+        self.assertIsNone(self.page.evaluate('localStorage.getItem("pb-recommend-draft:test-parent")'))
+
+    def test_invalid_or_unavailable_draft_storage_does_not_break_writing(self):
+        self.login_with_code()
+        self.page.evaluate('localStorage.setItem("pb-recommend-draft:test-parent","invalid json")')
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('[data-mobile=write]').click()
+        expect(self.page.locator('#draft-status')).to_contain_text('無法讀取')
+        self.page.evaluate('''() => {
+          const set=Storage.prototype.setItem;
+          Storage.prototype.setItem=function(key,...args){
+            if(key.startsWith('pb-recommend-draft:'))throw new Error('test quota');
+            return set.call(this,key,...args);
+          };
+        }''')
+        self.page.locator('#f_t').fill('仍然可以繼續寫')
+        expect(self.page.locator('#draft-status')).to_contain_text('無法自動暫存')
+        expect(self.page.locator('#f_t')).to_have_value('仍然可以繼續寫')
+        expect(self.page.locator('#f_ok')).to_be_enabled()
 
 
 if __name__ == '__main__':

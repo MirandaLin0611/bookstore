@@ -23,11 +23,11 @@ select id from auth.users where email = 'you@example.com';
 目前網址為 `https://bookpebble.yhlin06.workers.dev/`，使用靜態檔案直接上傳。更新此站時：
 
 1. 先完成本版需要的資料庫補丁。
-2. 準備 ZIP：最外層須有 `index.html`、`styles.css`、`config.js` 及 `assets/reading-garden.svg`；不要再包一層專案資料夾。
+2. 準備 ZIP：最外層須有 `index.html`、`styles.css`、`config.js`、`mobile.js`、`manifest.webmanifest`，並保留 `assets/reading-garden.svg` 與 `assets/bookpebble-icon.png`；不要再包一層專案資料夾。
 3. 登入 [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → 開啟既有的 **bookpebble** → **Deployments** → **Upload assets / New deployment**（按鈕文字依介面版本可能不同）。
 4. 上傳 ZIP、確認並部署到正式環境。使用既有 Worker，不需重新建立專案或更改網址。
 
-只更新 GitHub 不會同步更新這個 Workers 網址。也可將這四個檔案／路徑部署至 Cloudflare Pages 或其他靜態網站服務。
+只更新 GitHub 不會同步更新這個 Workers 網址。也可將這些檔案部署至 Cloudflare Pages 或其他靜態網站服務。已完成先前資料庫更新者，這次的手機入口與文字草稿功能只需上傳 ZIP，不需再執行 SQL。
 
 ## 三、讓登入連結能導回你的網站
 
@@ -53,5 +53,6 @@ select id from auth.users where email = 'you@example.com';
 5. 確認階段有「幼幼班」，投稿與書籍詳情的家長建議也能選；畫風與特色有多種選項。沒有符合標籤的書顯示 0 本是正常結果。
 6. 以投稿人或管理者登入，開啟書籍詳情 → 編輯推薦 → 儲存，確認修改後仍是同一本書，原有收藏與投票保留。集單管理可從管理者帳號視窗或書籍詳情進入，詳見 [編輯與集單操作](docs/editing-and-groups.md)。
 7. 管理者到「集單與開團管理」，填寫某本書的「本書集氣補充說明」並儲存。以未登入瀏覽器查看已開放集氣的書，確認通用說明及該書補充文字都出現；其他書不應顯示這段補充。留空則只顯示通用說明。
+8. 用手機查看底部「找書／記心得／我的書架」，開啟「加入主畫面」說明。登入後填一些心得文字，關閉頁面再重新開啟，同一帳號點「記心得」應帶回草稿。iPhone 的實際加入步驟及瀏覽器儲存限制見 [手機回訪與文字草稿](docs/mobile-access.md)。
 
 目前開團會建立站內通知及寄信待辦紀錄，但尚無集單通知信的自動寄送程式，通知信需由主辦人另行寄送。

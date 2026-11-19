@@ -6,7 +6,12 @@
 <title>繪本小聚場</title>
 <meta name="description" content="家長親自讀過的繪本推薦。依年齡與生活情境找書，看看孩子的真實反應，收藏下一本想一起讀的故事。">
 <meta name="theme-color" content="#faf8f1">
-<link rel="stylesheet" href="styles.css?v=collection-copy-1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="繪本小聚場">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/bookpebble-icon.png">
+<link rel="icon" type="image/png" href="assets/bookpebble-icon.png">
+<link rel="stylesheet" href="styles.css?v=mobile-access-1">
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -46,6 +51,10 @@
     <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-sprout"></use></svg>依年齡與情境找書</span>
     <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg>收藏下次想讀的故事</span>
   </div>
+  <aside class="home-shortcut" id="home-shortcut" hidden aria-label="手機快速開啟">
+    <div><strong>下次想記心得，點一下就到。</strong><p>把小聚場放在手機主畫面，隨手打開你的書架。</p></div>
+    <button class="btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">加入主畫面</button>
+  </aside>
   <section aria-labelledby="scenario-title">
     <div class="section-heading">
       <div><h2 id="scenario-title">今天，想陪孩子聊什麼？</h2><p class="section-description">從生活裡的小時刻，找到故事的入口。</p></div>
@@ -89,7 +98,25 @@
     <button class="btn" data-action="share-book">分享一本繪本 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg></button>
   </section>
 </main>
-<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
+<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><button class="text-btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">把小聚場加入主畫面</button><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
+<nav class="mobile-nav" aria-label="手機快捷導覽" data-page>
+  <button type="button" data-mobile="explore" aria-label="找書，查看全部繪本"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg><span>找書</span></button>
+  <button type="button" data-mobile="write"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg><span>記心得</span></button>
+  <button type="button" data-mobile="shelf"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-shelf"></use></svg><span>我的書架</span></button>
+</nav>
+
+<div class="ov" id="ovinstall" aria-labelledby="install-title"><div class="box md"><button class="btn x" onclick="closeAll()" aria-label="關閉加入主畫面說明">✕</button><div class="mb">
+  <h2 id="install-title" tabindex="-1">把小聚場放在手機主畫面</h2>
+  <p class="form-intro">下次點手機上的繪本圖示，就能回來找書、記心得，不用重新找連結。</p>
+  <div class="install-preview"><img src="assets/bookpebble-icon.png" width="64" height="64" alt="繪本小聚場的書本與嫩芽圖示"><span>繪本小聚場</span></div>
+  <div id="install-ios"><h3>iPhone／iPad</h3><ol class="install-steps"><li>用 <strong>Safari</strong> 開啟這個網站。</li><li>點「分享」（方框上有向上箭頭），選「加入主畫面」。找不到時可往下滑或選「更多」。</li><li>若有「以網頁 App 開啟」選項，將它開啟，再按「加入」。</li></ol><p class="note">從 Threads、LINE 等 App 點進來時，請先從選單改用 Safari 開啟；也可複製下方網址，貼到 Safari。</p></div>
+  <div id="install-android"><h3>Android</h3><ol class="install-steps"><li>用 <strong>Chrome</strong> 開啟這個網站。</li><li>點右上角「⋮」，選「新增至主畫面」或「安裝應用程式」，依畫面確認。</li></ol></div>
+  <button class="btn y" id="install-native" hidden>安裝繪本小聚場</button>
+  <label class="field" for="install-url">網站網址<input type="url" id="install-url" readonly></label>
+  <button class="btn" id="install-copy">複製網站網址</button>
+  <p class="note" id="install-status" role="status" aria-live="polite"></p>
+  <p class="note">加入後，請從主畫面圖示開啟。如需重新登入，可在主畫面版本輸入信中的驗證碼。文字草稿只保存在目前的瀏覽器或主畫面版本，兩邊可能不共用。讀取書單與送出心得仍需網路。</p>
+</div></div></div>
 
 <div class="ov" id="ov"><div class="box md" id="md" style="position:relative"></div></div>
 
@@ -108,7 +135,8 @@
 
 <div class="ov" id="ovf"><div class="box md"><button class="btn x" onclick="closeAll()" aria-label="關閉分享視窗">✕</button><div class="mb">
   <h2 style="margin:0" id="submit-title" tabindex="-1">分享一本你讀過的繪本</h2>
-  <p class="form-intro">說說你們一起讀的經驗，給下一位家長一點靈感。</p>
+  <p class="form-intro">先記書名和一點感想，之後再補充也可以。</p>
+  <div class="draft-info"><p class="note" id="draft-help">文字與選項會暫存在這個瀏覽器，送出前不會公開；照片不跨次保留。</p><div class="draft-actions"><p class="note" id="draft-status" role="status" aria-live="polite"></p><button class="text-btn" id="draft-clear" type="button">清除這份草稿</button></div></div>
   <div class="field-grid"><label class="field" for="f_t">書名 <span class="sr-only">必填</span><input type="text" id="f_t" placeholder="這本好故事叫什麼名字？" required maxlength="200"></label><label class="field" for="f_a">作者／繪者（選填）<input type="text" id="f_a" placeholder="依手上的版本填寫"></label></div>
   <label class="field" for="f_lang">你讀的版本<select id="f_lang"><option>中文</option><option>英文</option></select></label>
   <label class="field" for="f_r">為什麼想推薦？（選填）<textarea id="f_r" placeholder="例如：故事很貼近剛上學的心情，我們讀完聊了好久。"></textarea></label>
@@ -205,6 +233,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script src="config.js?v=email-code-1"></script>
+<script src="mobile.js?v=mobile-access-1"></script>
 <script>
 var STG=["幼幼班","小班","中班","大班","數字學習","ABC學習","同儕關係","情緒管理","睡前共讀","生活習慣","親子互動"],AG=[0,1,2,3,4,5,6,7,8,9,10,11,12];
 var STYLE_OPTIONS=[
@@ -334,8 +363,9 @@ if(!same||!el.contains(document.activeElement)){var target=el.querySelector("h2"
 function closeAccount(){clearLoginAction();closeAll()}
 function closeTopDialog(){if($("ove").classList.contains("show")){closeBookEditor();return}if($("ova").classList.contains("show"))clearLoginAction();if($("ovz").classList.contains("show")&&$("ov").classList.contains("show")){$("ovz").classList.remove("show");$("ovz").setAttribute("aria-hidden","true");$("ov").inert=false;$("ov").setAttribute("aria-hidden","false");if(zoomReturnFocus&&zoomReturnFocus.isConnected)zoomReturnFocus.focus({preventScroll:true});return}closeAll()}
 function rateUI(){document.querySelectorAll(".rt").forEach(function(x){var on=x.textContent===rt;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)})}
-function startRecommendation(){if(!need("登入後，就能分享你的共讀經驗",{kind:"recommend"}))return;closeAll();showDialog("ovf")}
-function selectShelf(tab,quiet){S.tab=tab;document.querySelectorAll(".tab").forEach(function(t){var on=t.dataset.t===tab;t.classList.toggle("on",on);t.setAttribute("aria-pressed",on)});if(!quiet)render()}
+function openRecommendation(){MobileAccess.restoreDraft();closeAll();showDialog("ovf")}
+function startRecommendation(){if(!need("登入後，就能分享你的共讀經驗",{kind:"recommend"}))return;openRecommendation()}
+function selectShelf(tab,quiet){S.tab=tab;document.querySelectorAll(".tab").forEach(function(t){var on=t.dataset.t===tab;t.classList.toggle("on",on);t.setAttribute("aria-pressed",on)});MobileAccess.updateNav(tab);if(!quiet)render()}
 function filterDialogState(open){$("ftog").setAttribute("aria-expanded",open);$("fbody").classList.toggle("open",open)}
 function openFilters(situations){showDialog("ovfilters");$("fbody").scrollTop=0;if(situations){var first=$("situations").querySelector("details");first.open=true;$("fbody").scrollTop=$("situation-label").offsetTop-$("fbody").offsetTop;first.querySelector("summary").focus({preventScroll:true})}}
 function showResults(){closeAll();$("results-bar").scrollIntoView({block:"start"});$("results-bar").focus({preventScroll:true})}
@@ -400,7 +430,7 @@ function resumeLoginAction(){
   var action=getLoginAction();
   if(!action)return Promise.resolve(false);
   clearLoginAction();
-  if(action.kind==="recommend"){showDialog("ovf");return Promise.resolve(true)}
+  if(action.kind==="recommend"){openRecommendation();return Promise.resolve(true)}
   if(loadError){toast("已登入，但書單暫時無法載入；請重新載入後再收藏。");return Promise.resolve(true)}
   var index=B.findIndex(function(b){return b.id===action.bookId&&b.status==="published"});
   if(index<0){toast("這本書目前無法公開瀏覽，請重新選擇。");return Promise.resolve(true)}
@@ -555,7 +585,7 @@ function saveBookEdit(){var editor=EDITOR,b=editor&&B.find(function(book){return
 var v=function(id){return $(id).value.trim()},changes={title:v("e_t"),author:v("e_a"),lang:v("e_lang"),is_taiwan:$("e_tw").checked,themes:editTags(v("e_th")),styles:editTags(v("e_st")),review:v("e_r"),kid_reaction:v("e_k"),warning:v("e_w"),guide_before:v("e_gb"),guide_during:v("e_gm"),guide_after:v("e_ga")};editor.busy=true;$("e_ok").disabled=true;editorError("");
 upPhotos(editor.photos.slice()).then(function(paths){editor.photos=paths;if(EDITOR===editor)editorPhotos();changes.photos=paths;return api("/rest/v1/rpc/edit_book_content",{m:"POST",b:{p_book:editor.id,p_changes:changes,p_original:editor.original}})}).then(function(){var reopen=EDITOR===editor&&$("ove").classList.contains("show");if(reopen)closeAll();toast("修改已儲存");return refresh().then(function(){if(reopen&&EDITOR===editor&&!document.querySelector(".ov.show")){var index=B.findIndex(function(book){return book.id===editor.id});if(index>=0)openB(index)}})}).catch(function(e){if(EDITOR===editor)editorError(e.code==="PGRST202"?"編輯功能尚未啟用，請聯絡網站管理者。":e.code==="40001"?"這本書已被更新。你的修改仍保留，請先複製需要的文字，再重新開啟編輯。":e.message||"暫時無法儲存，請稍後再試。");if(e.code==="40001")return refresh()}).finally(function(){editor.busy=false;if(EDITOR===editor)$("e_ok").disabled=false})}
 function openGroupManager(id){if(!me||!me.admin){toast("需要管理者身分");return}AT="gb";admOpen();if(id){var card=Array.from($("am_c").querySelectorAll("[data-group-book]")).find(function(el){return el.dataset.groupBook===id});if(card){card.scrollIntoView({block:"start"});card.focus({preventScroll:true})}}}
-function acctBtn(){$("acct").textContent=me?me.nick+"（已登入）":"登入／註冊";$("admb").style.display=me&&me.admin?"inline":"none";$("ac_admin").hidden=!(me&&me.admin)}
+function acctBtn(){$("acct").textContent=me?me.nick+"（已登入）":"登入／註冊";$("admb").style.display=me&&me.admin?"inline":"none";$("ac_admin").hidden=!(me&&me.admin);MobileAccess.syncAccount()}
 function emailCodeEnabled(){return CFG.EMAIL_CODE_LOGIN===true}
 function accountView(){
   $("ac_out").style.display=me?"none":"grid";
@@ -682,7 +712,7 @@ $("reset").onclick=clearFilters;
 $("all-books").onclick=showAllBooks;$("filter-all-books").onclick=showAllBooks;$("apply-filters").onclick=showResults;
 document.querySelectorAll(".tab").forEach(function(t){t.onclick=function(){if(t.dataset.t==="all")showAllBooks();else selectShelf(t.dataset.t)}});
 document.querySelectorAll("[data-explore],.brand").forEach(function(a){a.onclick=function(e){e.preventDefault();showAllBooks()}});
-$("my-shelf").onclick=function(){selectShelf("fav");$("discover").scrollIntoView({block:"start"})};
+$("my-shelf").onclick=function(){selectShelf("fav",true);clearFilters();showResults()};
 $("rand").onclick=function(){var o=list();if(!o.length){toast("目前沒有可挑的書");return}openB(B.indexOf(o[Math.floor(Math.random()*o.length)]))};
 $("twb").onclick=function(){S.tw=!S.tw;render()};
 $("ftog").onclick=function(){openFilters(false)};
@@ -699,7 +729,7 @@ if(!$("f_t").reportValidity())return;
 if(PH.length&&!$("f_ck").checked){toast("請先勾選：照片中沒有孩子");return}
 var btn=this;btn.disabled=true;
 upPhotos().then(function(paths){return api("/rest/v1/books",{m:"POST",h:{Prefer:"return=representation"},b:{title:v("f_t"),author:v("f_a"),lang:v("f_lang"),is_taiwan:$("f_tw").checked,themes:recommendationThemes(),styles:recommendationStyles(),review:v("f_r"),kid_reaction:v("f_k"),warning:v("f_w"),guide_before:v("g_b"),guide_during:v("g_m"),guide_after:v("g_a"),photos:paths,status:"pending",suggested_ages:Object.keys(FA).filter(function(k){return FA[k]}).map(Number),suggested_stages:recommendationStages()}})}).then(function(rows){var x=rows[0];return me.admin?api("/rest/v1/books?id=eq."+x.id,{m:"PATCH",h:{Prefer:"return=minimal"},b:{status:"published"}}):null}).then(function(){
-["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};FT={};FSTYLE={};multi("f_styles",STYLE_KEYS,FSTYLE);syncLifePickers();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
+MobileAccess.submitted();["f_t","f_a","f_th","f_st","f_r","f_k","f_w","g_b","g_m","g_a"].forEach(function(i){$(i).value=""});PH=[];pvH();$("f_ck").checked=false;$("f_tw").checked=false;FA={};FS={};FT={};FSTYLE={};multi("f_styles",STYLE_KEYS,FSTYLE);syncLifePickers();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);
 btn.disabled=false;closeAll();toast(me.admin?"已公開":"已送出，審核通過後會公開");return refresh()}).catch(function(e){btn.disabled=false;err(e)})};
 $("ac_request").onsubmit=function(e){e.preventDefault();sendLoginEmail()};
 $("ac_verify").onsubmit=function(e){e.preventDefault();verifyEmailCode()};
@@ -721,9 +751,9 @@ $("e_ok").onclick=saveBookEdit;$("e_ph").onchange=readEditorPhotos;
 document.querySelectorAll("#am_body [data-a]").forEach(function(x){x.onclick=function(){AT=x.dataset.a;admR()}});
 $("acct").onclick=openAcct}
 /* ===== 啟動 ===== */
-ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);multi("f_styles",STYLE_KEYS,FSTYLE);build();render();
+ageText();wire();multi("fa",AG,FA,null,function(x){return x+" 歲"});multi("fs",STG,FS);multi("f_styles",STYLE_KEYS,FSTYLE);build();render();MobileAccess.init();
 if(!SB||!KEY){loaded=true;loadError="missing configuration";render()}
-else fromHash().then(whoami).then(function(){acctBtn();return refresh()}).then(function(){if(me)return completeLogin(authCallback)});
+else fromHash().then(whoami).then(function(){acctBtn();return refresh()}).then(function(){if(me)return completeLogin(authCallback)}).then(MobileAccess.launchShortcut);
 </script>
 </body>
 </html>

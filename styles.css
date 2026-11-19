@@ -261,6 +261,30 @@ textarea{width:100%;min-height:110px;resize:vertical;line-height:1.8}
 #ac_code::placeholder{font-size:14px;letter-spacing:normal}
 #ac_verify{padding:18px;border:1px solid #dce4ce;border-radius:10px;background:#f5f7ed}
 .reading-stats{padding:15px 18px;margin:0 0 18px;font-size:13px;color:var(--mute)}
+.mobile-nav,.home-shortcut{display:none}
+.install-preview{display:flex;align-items:center;gap:14px;font-weight:600}
+.install-preview img{border-radius:16px}
+.install-steps{margin:8px 0;padding-left:23px;display:grid;gap:10px}
+#ovinstall h3{margin:0;font-size:16px}
+#install-status:empty,#draft-status:empty{display:none}
+.draft-info{padding:13px 15px;background:var(--acc2);border-radius:10px;display:grid;gap:7px}
+.draft-info p{margin:0;color:#56604f}
+.draft-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.draft-actions .text-btn{flex-shrink:0;min-height:44px}
+@media(max-width:720px){
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .home-shortcut{display:flex;align-items:center;gap:12px;padding:16px;background:#edf1e5;border:1px solid var(--line);border-radius:12px;margin:-8px 0 28px}
+  .home-shortcut strong{display:block;font-size:13px}
+  .home-shortcut p{font-size:12px;color:#56604f;margin:4px 0 0}
+  .home-shortcut .btn{flex-shrink:0;font-size:12px;padding-inline:12px}
+  .mobile-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--card);border-top:1px solid var(--line);padding:7px max(8px,env(safe-area-inset-right,0px)) calc(7px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));box-shadow:0 -3px 16px #35452b09}
+  .mobile-nav button{display:grid;justify-items:center;align-content:center;gap:2px;min-height:52px;padding:4px;border:0;border-radius:10px;background:transparent;color:var(--mute);font-size:12px}
+  .mobile-nav button[aria-pressed=true]{color:var(--acc);font-weight:600;background:var(--acc2)}
+  .mobile-nav [data-mobile=write]{color:var(--acc);font-weight:600}
+  .mobile-nav .icon{width:23px;height:23px}
+  .modal-open .mobile-nav{visibility:hidden}
+  body:not(.modal-open) .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+}
 @keyframes fade{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @keyframes breathe{50%{opacity:.45}}
 @media(min-width:1250px){.hero{min-height:415px}.hero-art img{max-height:410px}.hero-description{font-size:16px}}

@@ -10,7 +10,10 @@
 |---|---|
 | `index.html` | 網站頁面與互動邏輯 |
 | `styles.css` | 網站排版、手機版與介面樣式 |
+| `mobile.js` | 主畫面加入說明、手機快捷入口、帳號各自的本機文字草稿 |
+| `manifest.webmanifest` | 主畫面名稱、圖示、開啟方式及支援瀏覽器的快捷入口 |
 | `assets/reading-garden.svg` | 首頁共讀插畫（本地檔案，不依賴外部圖床） |
+| `assets/bookpebble-icon.png` | 沿用網站圖示，供手機主畫面使用 |
 | `config.js` | 資料庫連線設定（Project URL 與 Publishable key，可公開） |
 | `schema.sql` | 資料庫結構與權限規則，新資料庫先執行 |
 | `patch1.sql` | 補丁，在 schema.sql 之後執行 |
@@ -22,7 +25,9 @@
 
 在專案資料夾執行 `python -m http.server 8000`，開啟 `http://localhost:8000`。不需要安裝前端套件或編譯。資料讀取使用 `config.js` 指定的 Supabase；本機測試登入前，需在 Supabase 設定允許的重新導向網址。
 
-部署時保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置；不需上傳 SQL、文件或測試。現行正式站是 [BookPebble](https://bookpebble.yhlin06.workers.dev/)，使用 Cloudflare Workers 靜態檔案上傳；GitHub 程式碼更新不會自動更新這個網址。啟動、資料庫與上傳步驟見 [SETUP.md](SETUP.md)。
+部署時保留 `index.html`、`styles.css`、`config.js`、`mobile.js`、`manifest.webmanifest` 與 `assets/` 的相對位置；不需上傳 SQL、文件或測試。現行正式站是 [BookPebble](https://bookpebble.yhlin06.workers.dev/)，使用 Cloudflare Workers 靜態檔案上傳；GitHub 程式碼更新不會自動更新這個網址。啟動、資料庫與上傳步驟見 [SETUP.md](SETUP.md)。
+
+手機版提供固定的「找書／記心得／我的書架」入口，以及加入手機主畫面的操作說明。心得文字與選項會以登入帳號分開暫存於本機瀏覽器，關閉後可繼續填寫；照片不跨次保存，草稿不會自動投稿或跨裝置同步。這項更新不需要 SQL。操作及限制見 [手機回訪與文字草稿](docs/mobile-access.md)。
 
 「幼幼班」投稿及投票需要 `patch2.sql`；既有資料庫若尚未執行，請先套用這份補丁，不要重跑 `schema.sql`。已執行者不需重跑。關鍵字搜尋本身不需額外 SQL。階段更新說明見 [篩選與書單更新步驟](docs/browse-update.md)。
 
