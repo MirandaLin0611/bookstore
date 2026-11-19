@@ -46,6 +46,11 @@ class EmailLoginTests(unittest.TestCase):
         self.send_status = 200
         self.books = []
         self.book_status = 201
+        self.admin = False
+        self.edit_status = 200
+        self.edit_code = None
+        self.hold_edit = False
+        self.held_edits = []
         self.age_votes = []
         self.stage_votes = []
         self.votes = {}
@@ -86,7 +91,7 @@ class EmailLoginTests(unittest.TestCase):
         req = route.request
         self.assertTrue(req.url.startswith('https://auth-tests.supabase.co/'))
         path = req.url.split('.supabase.co', 1)[1].split('?', 1)[0]
-        body = req.post_data_json if req.post_data else None
+        body = req.post_data_json if 'application/json' in req.headers.get('content-type', '') and req.post_data else None
         self.requests.append({'path': path, 'body': body, 'method': req.method})
         status, data = 200, []
         if path == '/auth/v1/otp':
@@ -149,8 +154,35 @@ class EmailLoginTests(unittest.TestCase):
             else:
                 data = [{'nickname': self.nickname}]
         elif path == '/rest/v1/rpc/is_admin':
-            data = False
+            data = self.admin
+        elif path == '/rest/v1/rpc/edit_book_content':
+            if self.hold_edit:
+                self.held_edits.append(route)
+                return
+            status, data = self.edit_reply(body)
+        elif path.startswith('/storage/v1/object/public/book-photos/'):
+            route.fulfill(status=200, content_type='image/svg+xml',
+                          body='<svg xmlns="http://www.w3.org/2000/svg" width="100" height="130"><rect width="100" height="130" fill="#cad7b9"/></svg>',
+                          headers={'Access-Control-Allow-Origin': '*'})
+            return
+        elif path.startswith('/storage/v1/object/book-photos/'):
+            data = {}
         route.fulfill(status=status, content_type='application/json', body=json.dumps(data), headers={'Access-Control-Allow-Origin': '*'})
+
+    def edit_reply(self, body):
+        if self.edit_status >= 400:
+            return self.edit_status, {'message': 'test failed edit', 'code': self.edit_code}
+        book = next((b for b in self.books if b['id'] == body['p_book']), None)
+        if not book or (not self.admin and book['submitted_by'] != 'test-parent'):
+            return 403, {'message': 'test forbidden edit', 'code': '42501'}
+        defaults = {'title': '', 'author': '', 'lang': '中文', 'is_taiwan': False,
+                    'themes': [], 'styles': [], 'review': '', 'kid_reaction': '',
+                    'warning': '', 'guide_before': '', 'guide_during': '', 'guide_after': '', 'photos': []}
+        current = dict(defaults, **book)
+        if any(current[key] != value for key, value in body['p_original'].items()):
+            return 409, {'message': 'test concurrent edit', 'code': '40001'}
+        book.update(body['p_changes'])
+        return 200, book
 
     def request_email(self, page=None):
         page = page or self.page
@@ -627,6 +659,193 @@ class EmailLoginTests(unittest.TestCase):
                 self.page.locator('#q').fill(keyword)
                 expect(self.page.locator('.book-link')).to_have_text(titles)
                 expect(self.page.locator('#active-filters')).to_be_empty()
+
+    def load_edit_books(self):
+        self.books = [
+            {'id': 'owned-edit', 'title': '原本的書名', 'author': '原作者', 'lang': '中文',
+             'status': 'published', 'submitted_by': 'test-parent', 'created_at': '2026-01-01T00:00:00Z',
+             'review': '原本的共讀心得', 'kid_reaction': '孩子喜歡', 'themes': ['自訂主題'],
+             'styles': ['插畫風格'], 'photos': ['test-parent/original.jpg'],
+             'guide_before': '原本讀前建議', 'guide_during': '', 'guide_after': '', 'warning': '',
+             'suggested_ages': [3], 'suggested_stages': ['幼幼班']},
+            {'id': 'other-edit', 'title': '其他家長的書', 'author': '其他作者', 'lang': '英文',
+             'status': 'published', 'submitted_by': 'other-parent', 'review': '其他家長心得',
+             'themes': [], 'styles': [], 'photos': []},
+        ]
+        self.age_votes = [{'book_id': 'owned-edit', 'age': 3, 'votes': 1}]
+        self.stage_votes = [{'book_id': 'owned-edit', 'stage': '幼幼班', 'votes': 1}]
+        self.votes = {'owned-edit': {'book_id': 'owned-edit', 'ages': [3], 'stages': ['幼幼班']}}
+        self.favorites = {'owned-edit'}
+        self.page.reload(wait_until='networkidle')
+
+    def open_owned_editor(self):
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        self.page.get_by_role('button', name='編輯我的推薦', exact=True).click()
+        expect(self.page.locator('#ove')).to_be_visible()
+
+    def test_editor_controls_follow_ownership_and_admin_can_edit_other_books(self):
+        self.load_edit_books()
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        expect(self.page.locator('#md').get_by_role('button', name='編輯我的推薦', exact=True)).to_have_count(0)
+        self.page.locator('#ov .x').click()
+        self.login_with_code()
+        self.page.get_by_role('button', name='其他家長的書', exact=True).click()
+        expect(self.page.locator('#md').get_by_role('button', name='編輯繪本推薦', exact=True)).to_have_count(0)
+        self.page.locator('#ov .x').click()
+        self.admin = True
+        self.page.reload(wait_until='networkidle')
+        self.page.get_by_role('button', name='其他家長的書', exact=True).click()
+        self.page.get_by_role('button', name='編輯繪本推薦', exact=True).click()
+        self.page.locator('#e_r').fill('管理者協助修正的內容')
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#ove')).not_to_be_visible()
+        expect(self.page.locator('#md')).to_contain_text('管理者協助修正的內容')
+        self.assertEqual(self.books[1]['submitted_by'], 'other-parent')
+
+    def test_owner_edit_updates_same_book_and_preserves_votes_favorites_and_publication(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.open_owned_editor()
+        self.page.locator('#e_t').fill('修正後的書名')
+        self.page.locator('#e_r').fill('補上新的共讀經驗')
+        self.page.locator('#e_th').fill('原主題、補充關鍵字、補充關鍵字')
+        self.page.locator('#ove .optional-fields summary').click()
+        self.page.locator('#e_gb').fill('新的讀前建議')
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#ove')).not_to_be_visible()
+        expect(self.page.locator('#book-title')).to_have_text('修正後的書名')
+        expect(self.page.locator('#md')).to_contain_text('新的讀前建議')
+        saved = self.books[0]
+        self.assertEqual(saved['id'], 'owned-edit')
+        self.assertEqual(saved['status'], 'published')
+        self.assertEqual(saved['submitted_by'], 'test-parent')
+        self.assertEqual(saved['created_at'], '2026-01-01T00:00:00Z')
+        self.assertEqual(saved['themes'], ['原主題', '補充關鍵字'])
+        self.assertEqual(saved['suggested_ages'], [3])
+        self.assertEqual(saved['photos'], ['test-parent/original.jpg'])
+        self.assertEqual(self.favorites, {'owned-edit'})
+        self.assertEqual(self.stage_votes, [{'book_id': 'owned-edit', 'stage': '幼幼班', 'votes': 1}])
+        self.assertEqual([r for r in self.requests if r['path']=='/rest/v1/books' and r['method'] in ['POST','DELETE']], [])
+        changes = next(r['body']['p_changes'] for r in self.requests if r['path']=='/rest/v1/rpc/edit_book_content')
+        self.assertFalse(set(changes) & {'id','submitted_by','status','suggested_ages','suggested_stages'})
+        self.page.locator('#ov .x').click()
+        self.page.locator('#q').fill('補充關鍵字')
+        expect(self.page.locator('.book-link')).to_have_text(['修正後的書名'])
+
+    def test_editor_keeps_draft_on_failure_and_missing_database_function_then_retries(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.open_owned_editor()
+        self.page.locator('#e_t').fill('還沒儲存的修改')
+        for status, code in [(503, None), (404, 'PGRST202')]:
+            with self.subTest(status=status):
+                self.edit_status, self.edit_code = status, code
+                self.page.locator('#e_ok').click()
+                expect(self.page.locator('#e_error')).to_be_visible()
+                expect(self.page.locator('#e_ok')).to_be_enabled()
+                expect(self.page.locator('#e_t')).to_have_value('還沒儲存的修改')
+                self.assertEqual(self.books[0]['title'], '原本的書名')
+        self.edit_status, self.edit_code = 200, None
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#book-title')).to_have_text('還沒儲存的修改')
+
+    def test_editor_detects_concurrent_changes_keeps_text_and_reopens_fresh_content(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.open_owned_editor()
+        self.page.locator('#e_r').fill('這個視窗尚未送出的文字')
+        self.books[0]['review'] = '另一個視窗已儲存的內容'
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#e_error')).to_contain_text('這本書已被更新')
+        expect(self.page.locator('#e_ok')).to_be_enabled()
+        expect(self.page.locator('#e_r')).to_have_value('這個視窗尚未送出的文字')
+        self.assertEqual(self.books[0]['review'], '另一個視窗已儲存的內容')
+        self.page.get_by_role('button', name='取消', exact=True).click()
+        expect(self.page.locator('#md')).to_contain_text('另一個視窗已儲存的內容')
+        self.page.get_by_role('button', name='編輯我的推薦', exact=True).click()
+        expect(self.page.locator('#e_r')).to_have_value('另一個視窗已儲存的內容')
+
+    def test_canceling_editor_restores_book_and_does_not_replace_new_recommendation_draft(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('另一份未送出的新推薦')
+        self.page.locator('#f_r').fill('還在撰寫的心得')
+        self.page.locator('#ovf .x').click()
+        self.open_owned_editor()
+        self.page.locator('#e_t').fill('取消的修改')
+        self.page.keyboard.press('Escape')
+        expect(self.page.locator('#book-title')).to_have_text('原本的書名')
+        self.page.locator('#ov .x').click()
+        self.page.locator('#addb').click()
+        expect(self.page.locator('#f_t')).to_have_value('另一份未送出的新推薦')
+        expect(self.page.locator('#f_r')).to_have_value('還在撰寫的心得')
+
+    def test_editor_photos_retain_reorder_remove_and_upload_only_new_photo_once_on_retry(self):
+        self.load_edit_books()
+        self.books[0]['photos'].append('test-parent/second.jpg')
+        self.page.reload(wait_until='networkidle')
+        self.login_with_code()
+        self.open_owned_editor()
+        self.page.locator('#ove .optional-fields summary').click()
+        expect(self.page.locator('#e_pv .edit-photo')).to_have_count(2)
+        self.page.get_by_role('button', name='設為書封', exact=True).click()
+        self.page.get_by_role('button', name='移除第 2 張', exact=True).click()
+        self.page.locator('#e_ph').set_input_files({'name':'cover.svg','mimeType':'image/svg+xml',
+            'buffer':b'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30"><rect width="20" height="30" fill="green"/></svg>'})
+        expect(self.page.locator('#e_pv .edit-photo')).to_have_count(2)
+        self.page.get_by_role('button', name='設為書封', exact=True).click()
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#e_error')).to_contain_text('請先確認')
+        self.page.locator('#e_ck').check()
+        self.edit_status = 503
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#e_error')).to_contain_text('test failed edit')
+        expect(self.page.locator('#e_ok')).to_be_enabled()
+        self.edit_status = 200
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#ove')).not_to_be_visible()
+        photos = self.books[0]['photos']
+        self.assertEqual(len(photos), 2)
+        self.assertTrue(photos[0].startswith('test-parent/'))
+        self.assertNotEqual(photos[0], 'test-parent/original.jpg')
+        self.assertEqual(photos[1], 'test-parent/second.jpg')
+        uploads = [r for r in self.requests if r['path'].startswith('/storage/v1/object/book-photos/') and r['method']=='POST']
+        self.assertEqual(len(uploads), 1)
+
+    def test_late_editor_save_does_not_close_or_clear_another_form(self):
+        self.load_edit_books()
+        self.login_with_code()
+        self.open_owned_editor()
+        self.page.locator('#e_r').fill('延遲儲存的更新')
+        self.hold_edit = True
+        self.page.locator('#e_ok').click()
+        expect(self.page.locator('#e_ok')).to_be_disabled()
+        self.page.locator('#ove .x').click()
+        self.page.locator('#ov .x').click()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('正在寫的新推薦')
+        self.hold_edit = False
+        for route in self.held_edits:
+            status, data = self.edit_reply(route.request.post_data_json)
+            route.fulfill(status=status, content_type='application/json', body=json.dumps(data), headers={'Access-Control-Allow-Origin':'*'})
+        expect(self.page.locator('#toast')).to_contain_text('修改已儲存')
+        expect(self.page.locator('#ovf')).to_be_visible()
+        expect(self.page.locator('#f_t')).to_have_value('正在寫的新推薦')
+
+    def test_admin_group_shortcuts_exist_in_account_and_book_and_target_the_chosen_book(self):
+        self.load_edit_books()
+        self.admin = True
+        self.login_with_code()
+        self.page.locator('#acct').click()
+        self.page.get_by_role('button', name='集單與開團管理', exact=True).click()
+        expect(self.page.locator('#ovm')).to_be_visible()
+        expect(self.page.locator('#am_body [data-a=gb]')).to_have_class('btn y')
+        self.page.locator('#ovm .x').click()
+        self.page.get_by_role('button', name='其他家長的書', exact=True).click()
+        self.page.get_by_role('button', name='管理集單與開團', exact=True).click()
+        expect(self.page.locator('[data-group-book=other-edit]')).to_be_focused()
+        expect(self.page.locator('[data-group-book=other-edit]')).to_contain_text('開放集氣')
 
     def test_selected_situations_round_trip_through_submission_and_reset(self):
         self.login_with_code()

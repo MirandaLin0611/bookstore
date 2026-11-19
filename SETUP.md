@@ -2,8 +2,8 @@
 
 ## 一、資料庫（Supabase）
 
-1. **全新資料庫**：SQL Editor 依序執行專案根目錄的 `schema.sql`、`patch1.sql`、`patch2.sql`，各自顯示 Success。
-   **已經正常運作的資料庫**：本次只執行 `patch2.sql`，讓投稿與投票接受「幼幼班」，不要重跑 `schema.sql`。
+1. **全新資料庫**：SQL Editor 依序執行專案根目錄的 `schema.sql`、`patch1.sql`、`patch2.sql`、`patch3.sql`，各自顯示 Success。
+   **已經正常運作且已完成幼幼班更新的資料庫**：本次只執行 `patch3.sql`，啟用書籍內容編輯；不要重跑 `schema.sql`。
 2. 到網站用 Email 登入一次，再回 SQL Editor 執行下面這段（換成你的 Email），把自己設為管理者：
 
 ```sql
@@ -51,3 +51,4 @@ select id from auth.users where email = 'you@example.com';
 3. 用另一個瀏覽器（或無痕視窗）確認沒登入也能瀏覽。
 4. 開啟「看全部生活情境」→ 選條件 →「查看 N 本繪本」→「全部繪本」，確認可回到所有已公開書籍。
 5. 確認階段有「幼幼班」，投稿與書籍詳情的家長建議也能選；畫風與特色有多種選項。沒有符合標籤的書顯示 0 本是正常結果。
+6. 以投稿人或管理者登入，開啟書籍詳情 → 編輯推薦 → 儲存，確認修改後仍是同一本書，原有收藏與投票保留。集單管理可從管理者帳號視窗或書籍詳情進入，詳見 [編輯與集單操作](docs/editing-and-groups.md)。

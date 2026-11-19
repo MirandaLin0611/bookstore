@@ -15,6 +15,7 @@
 | `schema.sql` | 資料庫結構與權限規則，新資料庫先執行 |
 | `patch1.sql` | 補丁，在 schema.sql 之後執行 |
 | `patch2.sql` | 擴充「幼幼班」階段，既有資料庫也需執行一次 |
+| `patch3.sql` | 啟用投稿人及管理者的安全編輯功能，既有資料庫需執行一次 |
 
 ## 本機預覽
 
@@ -22,7 +23,9 @@
 
 部署時保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置；不需上傳 SQL、文件或測試。現行正式站是 [BookPebble](https://bookpebble.yhlin06.workers.dev/)，使用 Cloudflare Workers 靜態檔案上傳；GitHub 程式碼更新不會自動更新這個網址。啟動、資料庫與上傳步驟見 [SETUP.md](SETUP.md)。
 
-「幼幼班」投稿及投票需要 `patch2.sql`；既有資料庫若尚未執行，請先套用這份補丁，不要重跑 `schema.sql`。已執行者不需重跑。本次關鍵字搜尋更新不需新增 SQL。階段更新說明見 [篩選與書單更新步驟](docs/browse-update.md)。
+「幼幼班」投稿及投票需要 `patch2.sql`；既有資料庫若尚未執行，請先套用這份補丁，不要重跑 `schema.sql`。已執行者不需重跑。關鍵字搜尋本身不需額外 SQL。階段更新說明見 [篩選與書單更新步驟](docs/browse-update.md)。
+
+本版新增編輯已發布內容，請先在原 Supabase 專案執行 `patch3.sql`，再上傳新版。登入後，投稿人及管理者可在書籍詳情點「編輯我的推薦／編輯繪本推薦」，修改文字、標籤、照片與陪讀建議；原書籍身分、狀態、收藏、留言、投票及集單紀錄保留。管理者也可在帳號視窗直接進入「集單與開團管理」。完整說明見 [編輯與集單操作](docs/editing-and-groups.md)。
 
 登入只需 Email，暱稱在登入後的帳號設定儲存。跨裝置驗證碼的信件模板設定及登入回歸測試，見 [Email 登入說明](docs/email-login.md)。
 

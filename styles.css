@@ -95,6 +95,10 @@ input::placeholder,textarea::placeholder{color:#797d70;opacity:1}
 .search-clear{position:absolute;right:2px;top:2px;height:41px;width:40px;background:transparent;border:0;color:var(--mute);font-size:20px;border-radius:7px}
 .search-help,.search-context{font-size:12px;line-height:1.7;margin:10px 0 0;color:var(--mute)}
 .search-context{color:var(--acc);margin-top:5px}
+.edit-photos{align-items:start;margin-top:8px}
+.edit-photo{width:132px;display:grid;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px}
+.edit-photo img{width:110px;height:125px;object-fit:contain}
+.edit-photo .btn{min-height:44px;font-size:12px;padding:6px 8px}
 .search-row select{width:170px;font-size:13px}
 .ftog{background:#f8f9f2;white-space:nowrap}
 .ftog .icon{width:17px;height:17px}
