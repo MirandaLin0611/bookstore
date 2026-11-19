@@ -54,6 +54,7 @@ create table public.books (
   guide_before text not null default '' check (char_length(guide_before) <= 500),
   guide_during text not null default '' check (char_length(guide_during) <= 500),
   guide_after text not null default '' check (char_length(guide_after) <= 500),
+  collection_note text not null default '' check (char_length(collection_note) <= 600),
   photos text[] not null default '{}' check (cardinality(photos) <= 4),  -- 存 Storage 檔案路徑
   status text not null default 'pending' check (status in ('pending', 'published', 'hidden')),
   submitted_by uuid not null default auth.uid() references auth.users(id),

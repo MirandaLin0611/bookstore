@@ -99,6 +99,7 @@ input::placeholder,textarea::placeholder{color:#797d70;opacity:1}
 .edit-photo{width:132px;display:grid;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px}
 .edit-photo img{width:110px;height:125px;object-fit:contain}
 .edit-photo .btn{min-height:44px;font-size:12px;padding:6px 8px}
+.collection-note{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0;padding-top:12px;border-top:1px dashed var(--line)}
 .search-row select{width:170px;font-size:13px}
 .ftog{background:#f8f9f2;white-space:nowrap}
 .ftog .icon{width:17px;height:17px}

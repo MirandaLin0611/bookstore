@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 const { PGlite } = await import(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const root = new URL('../', import.meta.url);
-const sql = await Promise.all(['schema.sql','patch1.sql','patch2.sql','patch3.sql'].map(name => readFile(new URL(name, root), 'utf8')));
+const sql = await Promise.all(['schema.sql','patch1.sql','patch2.sql','patch3.sql','patch4.sql'].map(name => readFile(new URL(name, root), 'utf8')));
 const db = new PGlite();
-await db.exec(`
+const scaffolding = `
 create role anon;
 create role authenticated;
 create schema auth;
@@ -21,8 +21,12 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 create function storage.foldername(name text) returns text[] language sql immutable as $$
   select (string_to_array(name, '/'))[1:greatest(cardinality(string_to_array(name, '/'))-1,0)];
 $$;
-`);
-for (const source of sql.slice(0,3)) await db.exec(source);
+`;
+await db.exec(scaffolding);
+// Start with the existing site's schema so both migrations exercise real upgrades.
+const collectionColumn="  collection_note text not null default '' check (char_length(collection_note) <= 600),\n";
+assert.ok(sql[0].includes(collectionColumn));
+for (const source of [sql[0].replace(collectionColumn,''),sql[1],sql[2]]) await db.exec(source);
 const owner='00000000-0000-4000-8000-000000000001';
 const other='00000000-0000-4000-8000-000000000002';
 const admin='00000000-0000-4000-8000-000000000003';
@@ -121,8 +125,50 @@ for (const [id,status] of [[pending,'pending'],[hidden,'hidden']]) {
 await db.exec(sql[3]);
 assert.deepEqual((await db.query(policyQuery)).rows,policies);
 assert.deepEqual(await relatedRows(),related);
+const fountain='808d047c-ebb9-4974-a028-ce6d4142bd41';
+const fountainNote='本書英文版目前多處缺貨，我們將嘗試與國外出版社洽詢；能否取得書籍並順利成團，仍需等待對方回覆。';
+await db.query("insert into public.books (id,title,lang,status,submitted_by) values ($1,'If you cry like a fountain','英文','published',$2)",[fountain,owner]);
+const beforeCollection=(await db.query('select row_to_json(b) as row from public.books b order by id')).rows;
+await db.exec(sql[4]);
+const afterCollection=(await db.query('select row_to_json(b) as row from public.books b order by id')).rows;
+assert.deepEqual(afterCollection.map(({row:{collection_note,...row}})=>({row})),beforeCollection);
+for (const {row} of afterCollection) assert.equal(row.collection_note,row.id===fountain?fountainNote:'');
+assert.deepEqual(await relatedRows(),related);
+assert.deepEqual((await db.query(policyQuery)).rows,policies);
+async function updateCollection(actor,id,note) {
+  await db.exec('set role authenticated');
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)",[actor]);
+  try {return await db.query('update public.books set collection_note=$2 where id=$1 returning collection_note',[id,note]);}
+  finally {await db.exec('reset role');}
+}
+assert.equal((await updateCollection(owner,book,'投稿人不能更動集氣說明')).rows.length,0);
+assert.equal((await updateCollection(other,book,'其他會員不能更動')).rows.length,0);
+assert.equal((await current()).collection_note,'');
+await assert.rejects(edit(owner,book,{collection_note:'不允許透過內容編輯更動'}),e=>e.code==='22023');
+await updateCollection(admin,book,'管理者填寫的供書補充');
+await edit(owner,book,{review:'新增欄位後仍能修改推薦'});
+assert.equal((await current()).collection_note,'管理者填寫的供書補充');
+assert.equal((await current()).review,'新增欄位後仍能修改推薦');
+await updateCollection(admin,book,'字'.repeat(600));
+await assert.rejects(updateCollection(admin,book,'字'.repeat(601)),e=>e.code==='23514');
+await assert.rejects(updateCollection(admin,book,null),e=>e.code==='23502');
+assert.equal((await current()).collection_note,'字'.repeat(600));
+await updateCollection(admin,fountain,'');
+await db.exec(sql[4]);
+assert.equal((await current(fountain)).collection_note,'');
+assert.equal((await current()).collection_note,'字'.repeat(600));
+assert.deepEqual((await db.query(policyQuery)).rows,policies);
+assert.deepEqual(await relatedRows(),related);
+const fresh=new PGlite();
+await fresh.exec(scaffolding);
+for (const source of sql) await fresh.exec(source);
+await fresh.exec(sql[4]);
+assert.equal((await fresh.query("select count(*)::int as n from information_schema.columns where table_schema='public' and table_name='books' and column_name='collection_note'")).rows[0].n,1);
+assert.equal((await fresh.query('select count(*)::int as n from public.books')).rows[0].n,0);
+await fresh.close();
 console.log(JSON.stringify({migrationIdempotent:true,ownerAndAdminCanEdit:true,otherUsersAndAnonymousDenied:true,
  protectedFieldsAndDirectUpdatesDenied:true,staleEditsRejected:true,photoOwnershipChecked:true,
  constraintsAndAtomicityPreserved:true,statusAndIdentityPreserved:true,relatedTablesUnchanged:childTables,
- existingPoliciesUnchanged:policies.length}));
+ existingPoliciesUnchanged:policies.length,collectionNotesAdminOnly:true,fountainSeededOnlyOnce:true,
+ collectionLimitsChecked:true,clearedNotesStayCleared:true,freshDatabaseSupported:true}));
 await db.close();
