@@ -51,6 +51,10 @@ class EmailLoginTests(unittest.TestCase):
         self.edit_code = None
         self.hold_edit = False
         self.held_edits = []
+        self.book_patch_status = 200
+        self.groups = []
+        self.group_counts = {}
+        self.group_interests = set()
         self.age_votes = []
         self.stage_votes = []
         self.votes = {}
@@ -115,8 +119,30 @@ class EmailLoginTests(unittest.TestCase):
                     book = dict(body, id='submitted-%d' % len(self.books), submitted_by='test-parent')
                     self.books.append(book)
                     data = [book]
+            elif req.method == 'PATCH':
+                from urllib.parse import urlsplit, parse_qs
+                bid = parse_qs(urlsplit(req.url).query)['id'][0].removeprefix('eq.')
+                book = next((b for b in self.books if b['id'] == bid), None)
+                status = self.book_patch_status if self.admin and book else 403
+                if status >= 400:
+                    data = {'message': 'test failed book update'}
+                else:
+                    book.update(body)
+                    data = book
             else:
                 data = self.books
+        elif path == '/rest/v1/group_buys':
+            data = self.groups
+        elif path == '/rest/v1/group_buy_counts':
+            data = [{'book_id': g['book_id'], 'interested': self.group_counts.get(g['book_id'], 0) + int(g['book_id'] in self.group_interests)} for g in self.groups]
+        elif path == '/rest/v1/group_buy_interests':
+            if req.method == 'POST':
+                self.group_interests.add(body['book_id'])
+            elif req.method == 'DELETE':
+                from urllib.parse import urlsplit, parse_qs
+                self.group_interests.discard(parse_qs(urlsplit(req.url).query)['book_id'][0].removeprefix('eq.'))
+            else:
+                data = [{'book_id': bid} for bid in self.group_interests]
         elif path == '/rest/v1/book_age_votes':
             data = self.age_votes
         elif path == '/rest/v1/book_stage_votes':
@@ -846,6 +872,103 @@ class EmailLoginTests(unittest.TestCase):
         self.page.get_by_role('button', name='管理集單與開團', exact=True).click()
         expect(self.page.locator('[data-group-book=other-edit]')).to_be_focused()
         expect(self.page.locator('[data-group-book=other-edit]')).to_contain_text('開放集氣')
+
+    def load_collection_books(self):
+        self.load_edit_books()
+        self.books[0]['collection_note'] = '本書英文版目前多處缺貨，我們將嘗試與國外出版社洽詢；能否取得書籍並順利成團，仍需等待對方回覆。'
+        self.books[1]['collection_note'] = ''
+        self.groups = [{'book_id': 'owned-edit', 'target': 2, 'status': 'collecting', 'note': '原本的開團備註'},
+                       {'book_id': 'other-edit', 'target': 3, 'status': 'collecting', 'note': ''}]
+        self.page.reload(wait_until='networkidle')
+
+    def test_collecting_copy_sets_expectations_and_uses_each_books_own_supplement(self):
+        self.load_collection_books()
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        panel = self.page.locator('#md .gb')
+        for text in ['不保證成團', '達到目標人數後', '出版社洽詢供書及合作方式', '電子郵件通知']:
+            expect(panel).to_contain_text(text)
+        expect(panel.locator('.collection-note')).to_have_text(self.books[0]['collection_note'])
+        expect(panel).not_to_contain_text('原本的開團備註')
+        self.page.locator('#ov .x').click()
+        self.page.get_by_role('button', name='其他家長的書', exact=True).click()
+        expect(panel).to_contain_text('不保證成團')
+        expect(panel.locator('.collection-note')).to_have_count(0)
+        expect(panel).not_to_contain_text('國外出版社')
+
+    def test_reaching_interest_target_does_not_claim_a_confirmed_group(self):
+        self.load_collection_books()
+        self.group_counts['owned-edit'] = 1
+        self.login_with_code()
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        self.page.get_by_role('button', name='我想要，集氣', exact=True).click()
+        expect(self.page.locator('#md .gb')).to_contain_text('已達標，將與出版社洽談，成團與否仍待確認')
+        expect(self.page.locator('#toast')).to_contain_text('仍不保證成團')
+        self.assertEqual(self.groups[0]['status'], 'collecting')
+        expect(self.page.locator('#md .gb').get_by_role('button', name='取消集氣', exact=True)).to_be_visible()
+
+    def test_collection_supplement_is_plain_text_and_hidden_after_opening_or_closing(self):
+        self.load_collection_books()
+        text = '</p><script>window.collectionInjected=1</script>\n供貨仍待確認'
+        self.books[0]['collection_note'] = text
+        self.page.reload(wait_until='networkidle')
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        expect(self.page.locator('#md .collection-note')).to_have_text(text)
+        self.assertIsNone(self.page.evaluate('window.collectionInjected'))
+        self.assertEqual(self.page.locator('#md script').count(), 0)
+        for status in ['open', 'closed']:
+            with self.subTest(status=status):
+                self.groups[0]['status'] = status
+                self.page.reload(wait_until='networkidle')
+                self.page.get_by_role('button', name='原本的書名', exact=True).click()
+                expect(self.page.locator('#md .collection-note')).to_have_count(0)
+                expect(self.page.locator('#md .gb')).not_to_contain_text('達到目標人數後')
+
+    def test_admin_collection_copy_save_is_per_book_preserves_other_drafts_and_can_clear(self):
+        self.load_collection_books()
+        self.group_counts['owned-edit'] = 2
+        self.admin = True
+        self.login_with_code()
+        self.page.locator('#acct').click()
+        self.page.get_by_role('button', name='集單與開團管理', exact=True).click()
+        card = self.page.locator('[data-group-book=owned-edit]')
+        self.page.locator('#ap0').fill('另行確認價格')
+        self.page.locator('#ak0').fill('取貨方式草稿')
+        field = card.locator('textarea')
+        field.fill('第一本書專屬的供貨補充')
+        card.get_by_role('button', name='儲存集氣說明', exact=True).click()
+        expect(card.get_by_role('status')).to_contain_text('集氣說明已儲存')
+        expect(self.page.locator('#ap0')).to_have_value('另行確認價格')
+        expect(self.page.locator('#ak0')).to_have_value('取貨方式草稿')
+        self.assertEqual(self.books[0]['collection_note'], '第一本書專屬的供貨補充')
+        self.assertEqual(self.books[1]['collection_note'], '')
+        self.assertEqual(self.groups[0]['note'], '原本的開團備註')
+        field.fill('')
+        card.get_by_role('button', name='儲存集氣說明', exact=True).click()
+        expect(card.get_by_role('status')).to_contain_text('集氣說明已儲存')
+        self.assertEqual(self.books[0]['collection_note'], '')
+        self.page.locator('#ovm .x').click()
+        self.page.get_by_role('button', name='原本的書名', exact=True).click()
+        expect(self.page.locator('#md .gb')).to_contain_text('不保證成團')
+        expect(self.page.locator('#md .collection-note')).to_have_count(0)
+
+    def test_failed_collection_copy_save_preserves_text_until_retry(self):
+        self.load_collection_books()
+        self.admin = True
+        self.login_with_code()
+        self.page.locator('#acct').click()
+        self.page.get_by_role('button', name='集單與開團管理', exact=True).click()
+        card = self.page.locator('[data-group-book=owned-edit]')
+        old = self.books[0]['collection_note']
+        card.locator('textarea').fill('暫存未成功的說明')
+        self.book_patch_status = 503
+        card.get_by_role('button', name='儲存集氣說明', exact=True).click()
+        expect(card.get_by_role('status')).to_contain_text('文字已保留')
+        expect(card.locator('textarea')).to_have_value('暫存未成功的說明')
+        self.assertEqual(self.books[0]['collection_note'], old)
+        self.book_patch_status = 200
+        card.get_by_role('button', name='儲存集氣說明', exact=True).click()
+        expect(card.get_by_role('status')).to_contain_text('集氣說明已儲存')
+        self.assertEqual(self.books[0]['collection_note'], '暫存未成功的說明')
 
     def test_selected_situations_round_trip_through_submission_and_reset(self):
         self.login_with_code()
