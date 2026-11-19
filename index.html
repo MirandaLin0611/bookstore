@@ -67,15 +67,15 @@
     <div class="filters" role="search" aria-label="搜尋及篩選繪本">
       <div class="search-row">
         <div class="search-field"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-          <label class="sr-only" for="q">搜尋書名、作者或想找的方向</label>
-          <input type="text" id="q" placeholder="試試「天馬行空」、書名或作者…" autocomplete="off" enterkeyhint="search" aria-describedby="search-help search-context">
+          <label class="sr-only" for="q">搜尋書名、作者或任意關鍵字</label>
+          <input type="text" id="q" placeholder="搜尋書名、作者或任意關鍵字…" autocomplete="off" enterkeyhint="search" aria-describedby="search-help search-context">
           <button class="search-clear" id="clear-search" aria-label="清除搜尋文字" hidden>×</button>
         </div>
         <button class="btn ftog" id="ftog" aria-expanded="false" aria-haspopup="dialog" aria-controls="ovfilters"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-filter"></use></svg><span id="filter-label">篩選</span></button>
         <label class="sr-only" for="sort">書單排序</label>
         <select id="sort"><option value="">最新分享</option><option value="vote">最多家長投票</option><option value="like">最多家長覺得有幫助</option><option value="age">建議年齡由小到大</option></select>
       </div>
-      <p class="search-help" id="search-help">也能搜「有創意」這類想法；多個關鍵字用空白分隔，找同時符合的書。</p>
+      <p class="search-help" id="search-help">搜尋書籍文字與標籤，不限情境清單。多個關鍵字用空白分隔，找同時符合的書。</p>
       <p class="search-context" id="search-context" hidden></p>
       <div class="quick-filters"><span class="lab" id="language-label">語言</span><div id="langs" class="fr" role="group" aria-labelledby="language-label"></div><button type="button" class="chip" id="twb" aria-pressed="false">台灣作家</button></div>
       <div class="active-filters" id="active-filters" aria-label="已套用的條件"></div>
@@ -277,7 +277,7 @@ function styleKey(value){return STYLE_ALIASES[value.trim()]||value.trim()}
 function fitsStyle(b,style){return b.st.some(function(value){return styleKey(value)===styleKey(style)})}
 function normalizeSearch(value){return value.normalize("NFKC").toLowerCase().trim()}
 function searchPlan(value){return normalizeSearch(value).split(/[\s,、;]+/).filter(function(term,i,all){return term&&all.indexOf(term)===i}).map(function(term){var group=SEARCH_ALIASES[term];return {term:term,words:group?group.words:[term],label:group?group.label:""}})}
-function searchableText(b){var related=Object.keys(LIFE).filter(function(key){return fitsTheme(b,key)}).map(function(key){return [key,LIFE[key].label].concat(LIFE[key].aliases).join("\n")}),styles=STYLE_OPTIONS.filter(function(item){return fitsStyle(b,item.key)}).map(function(item){return [item.key].concat(item.aliases).join("\n")});return [b.t,b.a,b.r,b.k].concat(b.th,b.st,topk(b.stg,STG.length),related,styles).map(normalizeSearch).join("\n")}
+function searchableText(b){var related=Object.keys(LIFE).filter(function(key){return fitsTheme(b,key)}).map(function(key){return [key,LIFE[key].label].concat(LIFE[key].aliases).join("\n")}),styles=STYLE_OPTIONS.filter(function(item){return fitsStyle(b,item.key)}).map(function(item){return [item.key].concat(item.aliases).join("\n")}),g=b.g||{},ages=Object.keys(b.ages).filter(function(age){return b.ages[age]>0}).map(function(age){return age+"歲"});return [b.t,b.a,b.r,b.k,b.w,g.b||"",g.m||"",g.a||"",b.lang,b.tw?"台灣作家":""].concat(b.th,b.st,ages,topk(b.stg,STG.length),related,styles).map(normalizeSearch).join("\n")}
 function matchesSearch(b,plan){if(!plan.length)return true;var text=searchableText(b);return plan.every(function(item){return item.words.some(function(word){return text.indexOf(word)>=0})})}
 function syncSearchContext(){var labels=searchPlan($("q").value).filter(function(item){return item.label&&normalizeSearch(item.label)!==item.term}).map(function(item){return item.label}).filter(function(label,i,all){return all.indexOf(label)===i}),el=$("search-context");el.hidden=!labels.length;el.textContent=labels.length?"也會找："+labels.join("、"):""}
 function recommendationStyles(){var values=Object.keys(FSTYLE).filter(function(key){return FSTYLE[key]}).concat($("f_st").value.split(/[,，、]/));return values.map(styleKey).filter(function(value,i,all){return value&&all.indexOf(value)===i})}
