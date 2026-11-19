@@ -12,16 +12,21 @@
 | `config.js` | 資料庫連線設定（Project URL 與 Publishable key，可公開） |
 | `schema.sql` | 資料庫結構與權限規則，新資料庫先執行 |
 | `patch1.sql` | 補丁，在 schema.sql 之後執行 |
+| `patch2.sql` | 擴充「幼幼班」階段，既有資料庫也需執行一次 |
 
 ## 本機預覽
 
 在專案資料夾執行 `python -m http.server 8000`，開啟 `http://localhost:8000`。不需要安裝前端套件或編譯。資料讀取使用 `config.js` 指定的 Supabase；本機測試登入前，需在 Supabase 設定允許的重新導向網址。
 
-部署至 GitHub Pages 時，請保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置。既有資料庫不需為這次介面改版重跑 SQL。
+部署時保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置；不需上傳 SQL、文件或測試。現行正式站是 [BookPebble](https://bookpebble.yhlin06.workers.dev/)，使用 Cloudflare Workers 靜態檔案上傳；GitHub 程式碼更新不會自動更新這個網址。啟動、資料庫與上傳步驟見 [SETUP.md](SETUP.md)。
+
+既有資料庫請先執行 `patch2.sql`，再部署本版，讓「幼幼班」投稿及投票能正常儲存；不要重跑 `schema.sql`。詳細說明見 [本次更新步驟](docs/browse-update.md)。
 
 登入只需 Email，暱稱在登入後的帳號設定儲存。跨裝置驗證碼的信件模板設定及登入回歸測試，見 [Email 登入說明](docs/email-login.md)。
 
 生活情境共六組、32 種，篩選與投稿共用相同選項。分類參考、別名對照及資料處理方式，見 [生活情境分類](docs/situation-filters.md)。
+
+篩選使用獨立視窗，底部固定提供結果數及「全部繪本」入口。階段包含幼幼班；畫風與特色提供 12 種固定選項，另保留既有自訂標籤，投稿也能勾選。
 
 ## 安全提醒
 

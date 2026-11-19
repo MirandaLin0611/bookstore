@@ -6,7 +6,7 @@ alter table public.books
   add column if not exists suggested_ages smallint[] not null default '{}'
     check (suggested_ages <@ array[0,1,2,3,4,5,6,7,8,9,10,11,12]::smallint[]),
   add column if not exists suggested_stages text[] not null default '{}'
-    check (suggested_stages <@ array['小班','中班','大班','數字學習','ABC學習','同儕關係','情緒管理','睡前共讀','生活習慣','親子互動']);
+    check (suggested_stages <@ array['幼幼班','小班','中班','大班','數字學習','ABC學習','同儕關係','情緒管理','睡前共讀','生活習慣','親子互動']);
 
 create or replace function public.seed_vote_on_publish()
 returns trigger language plpgsql security definer set search_path = public as $$
