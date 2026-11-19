@@ -89,7 +89,7 @@
     <button class="btn" data-action="share-book">分享一本繪本 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg></button>
   </section>
 </main>
-<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。</p><p class="footer-note">購書連結為書店搜尋；若使用聯盟連結，會另外標示。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
+<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
 
 <div class="ov" id="ov"><div class="box md" id="md" style="position:relative"></div></div>
 
@@ -488,7 +488,7 @@ function jn(i){var b=B[i],g=b.gb;if(!g)return;if(!need("登入後才能集氣"))
 (on?api("/rest/v1/group_buy_interests",{m:"POST",h:{Prefer:"return=minimal"},b:{book_id:b.id}}):api("/rest/v1/group_buy_interests?book_id=eq."+b.id+"&user_id=eq."+me.id,{m:"DELETE"})).then(function(){joined[b.id]=on;g.n+=on?1:-1;toast(on?(g.n>=g.t?"已達標！等主辦人確認開團後會通知你":"已加入集氣"):"已取消集氣");openB(i,1);render()}).catch(err)}
 function noteH(b){var ix=B.indexOf(b),f=b.gb.info,r=resp[b.id];return '<div class="box nt"><b>《'+esc(b.t)+'》開團通知</b><div class="mt">共 '+b.gb.n+' 人集氣</div><div class="gd">'+[["團購價",f.price],["報名截止",f.deadline],["取貨／寄送",f.pickup],["備註",f.note]].filter(function(x){return x[1]}).map(function(x){return '<div><b>'+x[0]+'</b>　'+esc(x[1])+'</div>'}).join("")+'</div>'+(r?'<div class="row2"><span class="stamp">你的決定：'+(r.decision==="join"?"跟團 × "+r.qty+" 本":"這次不跟")+'</span></div>':b.gb.status==="closed"?'<div class="mt">這團已截止。</div>':'<div class="row2"><select id="qt'+ix+'">'+[1,2,3,4,5].map(function(n){return '<option value="'+n+'">'+n+' 本</option>'}).join("")+'</select><button class="btn y" onclick="nr('+ix+',1)">我要跟團</button><button class="btn" onclick="nr('+ix+',0)">這次不跟</button></div><div class="note">不需要線上付款，付款與取貨細節由主辦人之後另行通知你。</div>')+'</div>'}
 function nr(i,y){var b=B[i],q=+($("qt"+i)||{value:1}).value;api("/rest/v1/group_buy_responses?on_conflict=book_id,user_id",{m:"POST",h:{Prefer:"resolution=merge-duplicates,return=minimal"},b:{book_id:b.id,decision:y?"join":"skip",qty:q}}).then(function(){resp[b.id]={decision:y?"join":"skip",qty:q};render();toast("已記錄你的決定")}).catch(err)}
-function openB(i,keep){var b=B[i],e=encodeURIComponent(b.t+" "+b.a),sc=keep?$("md").scrollTop:0,pub=b.status==="published";
+function openB(i,keep){var b=B[i],sc=keep?$("md").scrollTop:0,pub=b.status==="published";
 VA={};VS={};
 var ak=Object.keys(b.ages).filter(function(k){return b.ages[k]>0}).sort(function(x,y){return x-y}),sk=topk(b.stg,STG.length);
 var cms=b.cm.map(function(c){return c.st==="hidden"?'<div class="cm mt">此留言已被隱藏。</div>':'<div class="cm"><div class="mt">'+esc(c.n)+(c.a?' · '+esc(c.a):'')+' · '+esc(c.d)+'</div><div>'+esc(c.c)+'</div>'+(me&&c.uid!==me.id?'<button class="lnk" onclick="rpt(\''+c.id+'\')">檢舉</button>':'')+(me&&c.uid===me.id?'<button class="lnk" onclick="delCm('+i+',\''+c.id+'\')">刪除我的留言</button>':'')+'</div>'}).join("")||'<div class="mt">還沒有留言，你可以是第一個。</div>';
@@ -497,7 +497,7 @@ $("ov").setAttribute("aria-labelledby","book-title");$("md").innerHTML='<button 
 (b.k?'<div class="say">孩子的反應：'+esc(b.k)+'</div>':'')+(b.w?'<div class="warnb">注意：'+esc(b.w)+'</div>':'<div class="warnb" style="background:var(--acc2)">沒有特別需要注意的內容</div>')+galH(b,i)+guideH(b)+
 (pub?'<div><h4 class="sec">家長怎麼看適合的年齡與階段 <span class="mt">（'+b.vn+' 位家長投票）</span></h4>'+barsH(b.ages,ak,function(k){return k+" 歲"},Math.max(b.vn,1))+'<div style="height:8px"></div>'+barsH(b.stg,sk,esc,Math.max(b.vn,1))+'</div>'+vf:'<div class="warnb">這本書正在審核中，通過後才會開放投票與留言。</div>')+
 (pub?'<div class="row2"><button class="btn" onclick="tf('+i+')">'+(fav[b.id]?"已收藏":"加入收藏")+'</button><button class="btn" onclick="lk('+i+')">有幫助 '+b.n+'</button><button class="btn" onclick="openLog('+i+')">'+(log[b.id]?"編輯閱讀紀錄":"記錄閱讀")+'</button><button class="btn" onclick="shareB('+i+')">分享給朋友</button></div>':'')+
-'<div class="row2"><a class="btn y" target="_blank" rel="noopener" href="https://search.books.com.tw/search/query/key/'+e+'">去博客來看看</a><a class="btn" target="_blank" rel="noopener" href="https://www.amazon.com/s?k='+e+'">去 Amazon 看看</a></div>'+(pub?gbH(b,i)+
+(pub?gbH(b,i)+
 '<div><h4 class="sec">家長留言（'+b.cm.filter(function(c){return c.st!=="hidden"}).length+'）</h4>'+cms+'</div>'+
 '<div class="vf"><div class="mt">分享你家孩子的閱讀心得，幫助下一位家長'+(me?'':'。需要先<a href="#" onclick="openAcct();return false">登入</a>')+'</div><div class="fr"><label class="field" for="ca">孩子年齡（選填）<input type="text" id="ca" placeholder="例如：3 歲半" style="width:150px"></label></div><label class="field" for="cc">你的共讀心得<textarea id="cc" maxlength="200" placeholder="孩子的反應、適合的情境、要注意的地方…"></textarea></label><button class="btn y" onclick="addCm('+i+')">送出留言</button></div>':'')+'</div>';
 if(pub&&!voted[b.id]){multi("va",AG,VA,null,function(x){return x+" 歲"});multi("vs",STG,VS)}
