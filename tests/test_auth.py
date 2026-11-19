@@ -454,6 +454,111 @@ class EmailLoginTests(unittest.TestCase):
         self.page.locator('#apply-filters').click()
         expect(self.page.locator('.book-link')).to_have_text(['其他主題的故事'])
 
+    def load_search_books(self):
+        def book(bid, title, **extra):
+            return dict({'id': bid, 'title': title, 'author': '測試作者', 'lang': '中文',
+                         'status': 'published', 'submitted_by': 'other-parent',
+                         'themes': [], 'styles': [], 'photos': [], 'review': '共讀心得'}, **extra)
+        self.books = [
+            book('tag', '點子小宇宙', themes=['想像與創作'], styles=['水彩風格']),
+            book('legacy', '小小造夢師', themes=['創造力'], styles=['拼貼']),
+            book('review', '會變身的雨滴', review='故事有許多創意。', styles=['水彩']),
+            book('reaction', '紙箱變成飛船', kid_reaction='孩子發揮想像力，接著編故事。', styles=['漫畫']),
+            book('literal', '腦洞大開的動物', styles=['手繪']),
+            book('english', 'A Sky of Ideas', author='Chris Example', lang='英文', themes=['創意'], styles=['水彩']),
+            book('sleep', '安靜的晚安', themes=['睡前'], styles=['溫柔']),
+            book('boundary', '天馬', author='行空'),
+            book('pending', '未公開的創意', themes=['想像與創作'], status='pending'),
+        ]
+        self.age_votes = [{'book_id': 'tag', 'age': 4, 'votes': 1}]
+        self.stage_votes = [{'book_id': 'tag', 'stage': '幼幼班', 'votes': 1}]
+        self.page.reload(wait_until='networkidle')
+
+    def test_intent_keywords_find_tags_old_aliases_reviews_and_child_reactions_without_filters(self):
+        self.load_search_books()
+        titles = [b['title'] for b in self.books[:6]]
+        requests_before = len(self.requests)
+        for query in ['天馬行空', '腦洞大開', '有創意', '創造力', '想像力']:
+            with self.subTest(query=query):
+                self.page.locator('#q').fill(query)
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+                expect(self.page.locator('#search-context')).to_have_text('也會找：想像與創作')
+                expect(self.page.locator('#active-filters')).to_be_empty()
+                expect(self.page.locator('#ovfilters')).not_to_be_visible()
+        self.assertEqual(len(self.requests), requests_before)
+
+    def test_multiple_keyword_terms_intersect_and_still_combine_with_language_and_age(self):
+        self.load_search_books()
+        titles = ['點子小宇宙', '會變身的雨滴', 'A Sky of Ideas']
+        for query in ['有創意 水彩', '有創意，水彩', '有創意、 水彩', '有創意\u3000水彩']:
+            with self.subTest(query=query):
+                self.page.locator('#q').fill(query)
+                expect(self.page.locator('.book-link')).to_have_text(titles)
+        self.page.locator('#langs').get_by_role('button', name='中文', exact=True).click()
+        expect(self.page.locator('.book-link')).to_have_text(titles[:2])
+        self.page.locator('#ftog').click()
+        self.page.locator('#age').fill('4')
+        self.page.locator('#apply-filters').click()
+        expect(self.page.locator('.book-link')).to_have_text(['點子小宇宙'])
+        self.page.locator('#all-books').click()
+        self.page.locator('#q').fill('腦洞大開、有創意、天馬行空')
+        expect(self.page.locator('.book-link')).to_have_text([b['title'] for b in self.books[:6]])
+        expect(self.page.locator('#search-context')).to_have_text('也會找：想像與創作')
+        self.page.locator('#q').fill('有創意 水彩 Chris')
+        expect(self.page.locator('.book-link')).to_have_text(['A Sky of Ideas'])
+
+    def test_search_keeps_literal_titles_author_unicode_and_stage_queries_and_does_not_join_fields(self):
+        self.load_search_books()
+        for query in ['ｃｈｒｉｓ', 'CHRIS', 'a sky', 'A Sky of Ideas']:
+            with self.subTest(query=query):
+                self.page.locator('#q').fill(query)
+                expect(self.page.locator('.book-link')).to_have_text(['A Sky of Ideas'])
+        self.page.locator('#q').fill('幼幼班')
+        expect(self.page.locator('.book-link')).to_have_text(['點子小宇宙'])
+        self.page.locator('#q').fill('天馬行空')
+        expect(self.page.locator('.book-link')).not_to_contain_text(['天馬'])
+        self.page.locator('#q').fill('不存在的火箭')
+        expect(self.page.locator('.card')).to_have_count(0)
+        expect(self.page.locator('#search-context')).not_to_be_visible()
+        self.page.get_by_role('button', name='清除條件，再找找', exact=True).click()
+        expect(self.page.locator('.card')).to_have_count(8)
+        self.page.locator('#q').fill('有創意 不存在的火箭')
+        expect(self.page.locator('.card')).to_have_count(0)
+
+    def test_creative_intent_aliases_round_trip_through_submission_and_search(self):
+        self.login_with_code()
+        self.page.locator('#addb').click()
+        self.page.locator('#f_t').fill('月亮也有新點子')
+        self.page.locator('#f_th').fill('天馬行空、有創意、腦洞大開、創造力')
+        self.page.locator('#f_ok').click()
+        expect(self.page.locator('#ovf')).not_to_be_visible()
+        payload = [r['body'] for r in self.requests if r['path'] == '/rest/v1/books' and r['method'] == 'POST'][-1]
+        self.assertEqual(payload['themes'], ['想像與創作'])
+        self.books[0]['status'] = 'published'
+        self.page.reload(wait_until='networkidle')
+        self.page.locator('#q').fill('腦洞大開')
+        expect(self.page.locator('.book-link')).to_have_text(['月亮也有新點子'])
+
+    def test_keyword_search_enter_ignores_ime_confirmation_and_clear_restores_overview(self):
+        self.load_search_books()
+        query = self.page.locator('#q')
+        query.fill('有創意')
+        query.dispatch_event('keydown', {'key': 'Enter', 'isComposing': True, 'bubbles': True})
+        expect(query).to_be_focused()
+        query.press('Enter')
+        expect(self.page.locator('#results-bar')).to_be_focused()
+        expect(self.page.locator('#ovfilters')).not_to_be_visible()
+        self.page.locator('#clear-search').click()
+        expect(query).to_be_focused()
+        expect(query).to_have_value('')
+        expect(self.page.locator('#search-context')).not_to_be_visible()
+        expect(self.page.locator('.card')).to_have_count(8)
+        for width in [320, 390, 1440]:
+            with self.subTest(width=width):
+                self.page.set_viewport_size({'width': width, 'height': 844})
+                query.fill('腦洞大開 有創意 水彩')
+                self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
     def test_selected_situations_round_trip_through_submission_and_reset(self):
         self.login_with_code()
         self.page.locator('#addb').click()

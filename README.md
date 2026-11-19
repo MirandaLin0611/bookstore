@@ -20,13 +20,15 @@
 
 部署時保留 `index.html`、`styles.css`、`config.js` 與 `assets/` 的相對位置；不需上傳 SQL、文件或測試。現行正式站是 [BookPebble](https://bookpebble.yhlin06.workers.dev/)，使用 Cloudflare Workers 靜態檔案上傳；GitHub 程式碼更新不會自動更新這個網址。啟動、資料庫與上傳步驟見 [SETUP.md](SETUP.md)。
 
-既有資料庫請先執行 `patch2.sql`，再部署本版，讓「幼幼班」投稿及投票能正常儲存；不要重跑 `schema.sql`。詳細說明見 [本次更新步驟](docs/browse-update.md)。
+「幼幼班」投稿及投票需要 `patch2.sql`；既有資料庫若尚未執行，請先套用這份補丁，不要重跑 `schema.sql`。已執行者不需重跑。本次關鍵字搜尋更新不需新增 SQL。階段更新說明見 [篩選與書單更新步驟](docs/browse-update.md)。
 
 登入只需 Email，暱稱在登入後的帳號設定儲存。跨裝置驗證碼的信件模板設定及登入回歸測試，見 [Email 登入說明](docs/email-login.md)。
 
 生活情境共六組、32 種，篩選與投稿共用相同選項。分類參考、別名對照及資料處理方式，見 [生活情境分類](docs/situation-filters.md)。
 
 篩選使用獨立視窗，底部固定提供結果數及「全部繪本」入口。階段包含幼幼班；畫風與特色提供 12 種固定選項，另保留既有自訂標籤，投稿也能勾選。
+
+搜尋也接受家長常用的想法，例如「天馬行空／腦洞大開／有創意」都會找想像與創作相關內容；「有創意 水彩」則找同時符合兩者的書。不需先操作篩選器。搜尋範圍、同義詞與上傳新版的步驟見 [關鍵字搜尋說明](docs/keyword-search.md)。
 
 ## 安全提醒
 
