@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "BookPebble 繪本小聚場",
+  "short_name": "繪本小聚場",
+  "description": "找下一本繪本，記下孩子的共讀反應。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8f1",
+  "theme_color": "#faf8f1",
+  "icons": [{"src": "assets/bookpebble-icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}],
+  "shortcuts": [
+    {"name": "記下共讀心得", "short_name": "記心得", "url": "./?go=share"},
+    {"name": "我的收藏書架", "short_name": "我的書架", "url": "./?go=shelf"}
+  ]
+}
