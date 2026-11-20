@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/bookpebble-icon.png">
 <link rel="icon" type="image/png" href="assets/bookpebble-icon.png">
-<link rel="stylesheet" href="styles.css?v=mobile-access-1">
+<link rel="stylesheet" href="styles.css?v=clean-copy-1">
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -20,7 +20,7 @@
   <div class="wrap header-inner">
     <a class="brand" href="./" aria-label="繪本小聚場首頁">
       <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="1" y="1" width="46" height="46" rx="15" fill="#e9eedf"/><path d="M24 23c-5-4-10-4-15-2v17c5-2 10-2 15 2 5-4 10-4 15-2V21c-5-2-10-2-15 2Zm0 0v17" stroke="#456547" stroke-width="1.8" stroke-linejoin="round"/><path d="M24 21v-8m0 5c-7 0-9-4-9-7 6-1 9 2 9 7Zm0-4c0-5 3-8 8-8 0 5-3 8-8 8Z" fill="#b88152"/></svg>
-      <span><span class="brand-name">繪本小聚場</span><span class="brand-caption">一起讀，一起慢慢長大</span></span>
+      <span class="brand-name">繪本小聚場</span>
     </a>
     <nav class="header-nav" aria-label="主要導覽">
       <a class="nav-link" href="#discover" data-explore>探索繪本</a>
@@ -32,40 +32,30 @@
 <main class="wrap" id="main" tabindex="-1" data-page>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">來自家長，讀過才有的真心推薦</p>
       <h1 id="hero-title">每個成長時刻，<br>都有一本<span class="accent">剛剛好的繪本。</span></h1>
-      <p class="hero-description">從睡前的一個擁抱，到第一次勇敢上學。<br>讓其他家庭的共讀經驗，陪你找到下一個好故事。</p>
       <div class="hero-actions">
         <a class="btn y large" href="#discover" data-explore><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg>找一本好書 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-arrow"></use></svg></a>
         <button class="btn soft large" id="addb">分享我的推薦</button>
       </div>
-      <p class="hero-note"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>自由瀏覽，不需登入。喜歡了，再放進你的書架。</p>
     </div>
     <div class="hero-art" aria-hidden="true">
       <img src="assets/reading-garden.svg" alt="" width="600" height="460" fetchpriority="high">
-      <p class="art-caption">今天，也一起讀一本吧。</p>
     </div>
   </section>
-  <div class="promises" aria-label="網站特色">
-    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-heart"></use></svg>家長真實共讀心得</span>
-    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-sprout"></use></svg>依年齡與情境找書</span>
-    <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg>收藏下次想讀的故事</span>
-  </div>
   <aside class="home-shortcut" id="home-shortcut" hidden aria-label="手機快速開啟">
-    <div><strong>下次想記心得，點一下就到。</strong><p>把小聚場放在手機主畫面，隨手打開你的書架。</p></div>
-    <button class="btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">加入主畫面</button>
+    <img src="assets/bookpebble-icon.png" width="40" height="40" alt="">
+    <button class="btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">加入手機主畫面</button>
   </aside>
   <section aria-labelledby="scenario-title">
     <div class="section-heading">
-      <div><h2 id="scenario-title">今天，想陪孩子聊什麼？</h2><p class="section-description">從生活裡的小時刻，找到故事的入口。</p></div>
-      <span class="small-label">選一個情境開始 ↓</span>
+      <div><h2 id="scenario-title">今天，想陪孩子聊什麼？</h2></div>
     </div>
     <div class="scen" id="scen" role="group" aria-label="依生活情境找書"></div>
-    <div class="scenario-more"><p class="note">從道歉、感謝到手足相處，陪孩子一起練習生活。</p><button class="text-btn" id="more-situations" aria-haspopup="dialog" aria-controls="ovfilters">看全部生活情境 <span aria-hidden="true">↗</span></button></div>
+    <div class="scenario-more"><button class="text-btn" id="more-situations" aria-haspopup="dialog" aria-controls="ovfilters">看全部生活情境 <span aria-hidden="true">↗</span></button></div>
   </section>
   <section class="browse" id="discover" aria-labelledby="browse-title">
     <div class="section-heading">
-      <div><h2 class="browse-title" id="browse-title">下一本喜歡的書，在這裡。</h2><p class="section-description" id="browse-description">一則真心分享，讓選書多一點方向。</p></div>
+      <div><h2 class="browse-title" id="browse-title">下一本喜歡的書，在這裡。</h2></div>
     </div>
     <nav class="shelf-tabs" aria-label="切換書單">
       <button class="tab on" data-t="all" aria-pressed="true">探索繪本</button>
@@ -77,14 +67,13 @@
       <div class="search-row">
         <div class="search-field"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
           <label class="sr-only" for="q">搜尋書名、作者或任意關鍵字</label>
-          <input type="text" id="q" placeholder="搜尋書名、作者或任意關鍵字…" autocomplete="off" enterkeyhint="search" aria-describedby="search-help search-context">
+          <input type="text" id="q" placeholder="搜尋書名、作者或任意關鍵字…" autocomplete="off" enterkeyhint="search" aria-describedby="search-context">
           <button class="search-clear" id="clear-search" aria-label="清除搜尋文字" hidden>×</button>
         </div>
         <button class="btn ftog" id="ftog" aria-expanded="false" aria-haspopup="dialog" aria-controls="ovfilters"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-filter"></use></svg><span id="filter-label">篩選</span></button>
         <label class="sr-only" for="sort">書單排序</label>
         <select id="sort"><option value="">最新分享</option><option value="vote">最多家長投票</option><option value="like">最多家長覺得有幫助</option><option value="age">建議年齡由小到大</option></select>
       </div>
-      <p class="search-help" id="search-help">搜尋書籍文字與標籤，不限情境清單。多個關鍵字用空白分隔，找同時符合的書。</p>
       <p class="search-context" id="search-context" hidden></p>
       <div class="quick-filters"><span class="lab" id="language-label">語言</span><div id="langs" class="fr" role="group" aria-labelledby="language-label"></div><button type="button" class="chip" id="twb" aria-pressed="false">台灣作家</button></div>
       <div class="active-filters" id="active-filters" aria-label="已套用的條件"></div>
@@ -94,11 +83,11 @@
     <div id="list" class="grid" aria-busy="true"></div>
   </section>
   <section class="share-invite" aria-labelledby="invite-title">
-    <div class="invite-copy"><svg class="invite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg><div><h2 id="invite-title">你家反覆讀的那本，<br>可能正是另一個家庭需要的故事。</h2><p>不用寫得完美，分享孩子最真實的反應就很好。</p></div></div>
+    <div class="invite-copy"><svg class="invite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-book"></use></svg><div><h2 id="invite-title">你家反覆讀的那本，<br>可能正是另一個家庭需要的故事。</h2></div></div>
     <button class="btn" data-action="share-book">分享一本繪本 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg></button>
   </section>
 </main>
-<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p><p class="footer-note">讓好故事，在家庭之間慢慢傳遞。</p></div><div class="footer-right"><button class="text-btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">把小聚場加入主畫面</button><p class="footer-note">每個孩子都有自己的閱讀步調，家長經驗供選書參考。<button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></p></div></div></footer>
+<footer class="site-footer" data-page><div class="wrap footer-inner"><div><p class="footer-brand">繪本小聚場</p></div><div class="footer-right"><button class="text-btn" data-install-guide aria-haspopup="dialog" aria-controls="ovinstall">把小聚場加入主畫面</button><button class="lnk" id="admb" style="margin-left:8px;display:none">管理後台</button></div></div></footer>
 <nav class="mobile-nav" aria-label="手機快捷導覽" data-page>
   <button type="button" data-mobile="explore" aria-label="找書，查看全部繪本"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg><span>找書</span></button>
   <button type="button" data-mobile="write"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><use href="#i-plus"></use></svg><span>記心得</span></button>
@@ -521,7 +510,6 @@ return o}
 function render(){
 var o=list(),nl=noteList();syncFilters();$("count").textContent=loaded?(S.tab==="note"?nl.length+" 則通知":"共 "+o.length+" 本繪本"):"正在整理書架…";$("fc").textContent=Object.keys(fav).filter(function(k){return fav[k]}).length;$("nc").textContent=nl.filter(function(b){return !resp[b.id]}).length;
 $("list").setAttribute("aria-busy",!loaded);$("stats").innerHTML="";$("share").hidden=!(me&&(S.tab==="fav"||S.tab==="log")&&o.length);$("rand").hidden=S.tab!=="all"||!o.length||!!loadError;
-var descriptions={all:"一則真心分享，讓選書多一點方向。",fav:"把心動的故事留下來，下次借書或選書時再來看看。",log:"記下讀過的故事，也留住一起長大的小時刻。",note:"你關注的繪本，有新消息會出現在這裡。"};$("browse-description").textContent=descriptions[S.tab];
 if(loadError){$("count").textContent="書架暫時無法載入";$("list").innerHTML=emptyState("書架暫時連不上","請稍後再試一次，你的收藏與閱讀紀錄仍保留在帳號裡。","refresh()","重新載入","leaf");return}
 if(!loaded){$("list").innerHTML='<div class="empty loading"><div class="empty-icon">'+icon('book')+'</div><p>正在把好故事放上書架…</p></div>';return}
 if((S.tab==="fav"||S.tab==="log"||S.tab==="note")&&!me){$("list").innerHTML=emptyState(S.tab==="log"?"留住一起讀過的時光":"為你們，留一個小小書架","用 Email 登入，就能收藏想讀的書、記下孩子的閱讀反應。不需要設定密碼。","openAcct()","登入，開啟我的書架","heart");return}
